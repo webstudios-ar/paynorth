@@ -96,17 +96,20 @@ tbody td{padding:12px 13px}
 .drop-zone h3{font-size:16px;font-weight:500;color:var(--t2);margin-bottom:6px}
 .drop-zone p{font-size:13px;color:var(--t3)}
 .bsum{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px}
-.bcard{border-radius:var(--r);padding:22px}
+.bcard{border-radius:var(--r);padding:24px 26px;display:flex;flex-direction:column;justify-content:space-between;min-height:110px}
 .bc1{background:var(--gl);border:1px solid #b3dcca}
 .bc2{background:var(--rbg);border:1px solid #f5c6c1}
 .bc3{background:var(--g);border:1px solid var(--gd)}
-.bclbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
-.bc1 .bclbl,.bc2 .bclbl{opacity:.65}
-.bc3 .bclbl{color:rgba(255,255,255,.7)}
-.bc1 .bcval{font-size:32px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--gd)}
-.bc2 .bcval{font-size:32px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--red)}
-.bc3 .bcval{font-size:32px;font-weight:800;font-family:'Outfit',sans-serif;color:#fff}
-.bcsub{font-size:12px;margin-top:5px;opacity:.65}
+.bclbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.bc1 .bclbl{color:var(--gd);opacity:.8}
+.bc2 .bclbl{color:var(--red);opacity:.8}
+.bc3 .bclbl{color:rgba(255,255,255,.8)}
+.bc1 .bcval{font-size:30px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--gd);letter-spacing:-.5px}
+.bc2 .bcval{font-size:30px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--red);letter-spacing:-.5px}
+.bc3 .bcval{font-size:30px;font-weight:800;font-family:'Outfit',sans-serif;color:#fff;letter-spacing:-.5px}
+.bcsub{font-size:12px;margin-top:8px;font-weight:500}
+.bc1 .bcsub{color:var(--gd);opacity:.7}
+.bc2 .bcsub{color:var(--red);opacity:.7}
 .bc3 .bcsub{color:rgba(255,255,255,.7)}
 .brow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)}
 .brow:last-child{border-bottom:none}
@@ -180,7 +183,12 @@ tbody td{padding:12px 13px}
       <p>Portal de Administración</p>
     </div>
     <div class="fg"><label>Email</label><input type="email" id="lu" placeholder="admin@paynorth.com" autocomplete="username"/></div>
-    <div class="fg"><label>Contraseña</label><input type="password" id="lp" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="fg"><label>Contraseña</label>
+      <div style="position:relative">
+        <input type="password" id="lp" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:44px;box-sizing:border-box"/>
+        <button type="button" onclick="var i=document.getElementById('lp');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;padding:0;line-height:1;color:var(--t3)">👁</button>
+      </div>
+    </div>
 
     <button class="btn-p" onclick="doLogin()">Ingresar</button>
     <p class="lhint">Ingresá con tu email y contraseña de PAYNORTH</p>
@@ -254,18 +262,64 @@ tbody td{padding:12px 13px}
 
 <div class="overlay" id="modal-grupos">
   <div class="modal-grupos">
-    <h3>Gestionar Grupos</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0">Gestionar Grupos</h3>
+      <button class="btn-cancel" onclick="closeModal('modal-grupos')" style="padding:6px 14px">Cerrar</button>
+    </div>
     <div id="grupos-content"></div>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--b)">
-      <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:10px">Crear nuevo grupo</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <input id="nuevo-grupo-nombre" placeholder="Nombre del grupo (ej: Socio Juan)" style="flex:1;min-width:180px;padding:9px 12px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:14px"/>
-        <input type="color" id="nuevo-grupo-color" value="#1a7a4a" style="width:44px;height:38px;border:1.5px solid var(--b);border-radius:var(--rs);cursor:pointer;padding:2px"/>
-        <button class="btn-save" onclick="crearGrupo()" style="padding:9px 18px">+ Crear</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-socio">
+  <div class="modal" style="width:640px;max-height:90vh;overflow-y:auto">
+    <h3 id="socio-modal-title">Nuevo Socio</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
+      <div class="fg"><label>Nombre del socio *</label><input id="soc-nombre" placeholder="Ej: Juan Pérez"/></div>
+      <div class="fg"><label>Usuario (vinculado)</label>
+        <select id="soc-usuario" style="width:100%;padding:10px 14px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:14px">
+          <option value="">Sin usuario vinculado</option>
+        </select>
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:16px">
-      <button class="btn-cancel" onclick="closeModal('modal-grupos')">Cerrar</button>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
+      <div class="fg"><label>Mi % de ganancia</label><input type="number" id="soc-pct-admin" placeholder="60" min="0" max="100"/></div>
+      <div class="fg"><label>% del socio</label><input type="number" id="soc-pct-socio" placeholder="40" min="0" max="100"/></div>
+    </div>
+
+    <div class="fg">
+      <label>¿Tiene vendedor?</label>
+      <div style="display:flex;gap:12px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px"><input type="radio" name="soc-vendedor" value="si" onchange="toggleVendedor()"/> Sí</label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px"><input type="radio" name="soc-vendedor" value="no" checked onchange="toggleVendedor()"/> No</label>
+      </div>
+    </div>
+
+    <div id="soc-vendedor-section" style="display:none;background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:10px">Datos del vendedor</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg"><label>Nombre del vendedor</label><input id="soc-vend-nombre" placeholder="Ej: Carlos"/></div>
+        <div class="fg"><label>% comisión vendedor (default)</label><input type="number" id="soc-vend-pct" placeholder="0.5" step="0.1" min="0"/></div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Asignación de terminales</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <select id="soc-grupo-sel" style="flex:1;padding:9px 12px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:13px">
+          <option value="">— Seleccionar por grupo —</option>
+        </select>
+        <button class="bsm" onclick="asignarGrupoASocio()">+ Agregar grupo</button>
+      </div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:6px">O seleccioná terminales individualmente:</div>
+      <input id="soc-term-search" placeholder="🔍 Buscar terminal..." oninput="filterSocTermList()" style="width:100%;padding:8px 12px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:13px;margin-bottom:6px;box-sizing:border-box"/>
+      <div id="soc-term-list" style="max-height:200px;overflow-y:auto;border:1px solid var(--b);border-radius:var(--rs);padding:8px"></div>
+    </div>
+
+    <div class="mact">
+      <button class="btn-cancel" onclick="closeModal('modal-socio')">Cancelar</button>
+      <button class="btn-save" onclick="saveSocio()">Guardar socio</button>
     </div>
   </div>
 </div>
@@ -336,6 +390,63 @@ tbody td{padding:12px 13px}
     <div class="mact">
       <button class="btn-cancel" onclick="closeModal('modal-pago-agencia')">Cancelar</button>
       <button class="btn-save" onclick="savePagoAgencia()">Registrar Pago</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-usuario">
+  <div class="modal" style="width:620px;max-height:90vh;overflow-y:auto">
+    <h3 id="usr-modal-title">Nuevo Usuario</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
+      <div class="fg"><label>Nombre completo *</label><input id="usr-nombre" placeholder="Ej: Martin Lopez"/></div>
+      <div class="fg"><label>Email *</label><input id="usr-email" type="email" placeholder="martin@ejemplo.com"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
+      <div class="fg">
+        <label>Contraseña *</label>
+        <div style="display:flex;gap:6px">
+          <input id="usr-password" type="text" placeholder="Contraseña temporal" style="flex:1"/>
+          <button class="bsm" onclick="document.getElementById('usr-password').value=generarPassword()" style="white-space:nowrap;padding:0 12px">🔀 Generar</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Rol *</label>
+        <select id="usr-rol" onchange="updateUsrPermisos()" style="width:100%;padding:10px 14px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:14px">
+          <option value="pdv">🏪 PDV (Punto de Venta)</option>
+          <option value="socio">🤝 Socio</option>
+          <option value="admin">⚙️ Administrador</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Terminales (para PDV y Socio) -->
+    <div id="usr-terminales-section" class="fg">
+      <label id="usr-term-label">Terminales asignadas</label>
+      <div style="max-height:160px;overflow-y:auto;border:1.5px solid var(--b);border-radius:var(--rs);padding:8px" id="usr-term-list"></div>
+    </div>
+
+    <!-- Permisos por sección -->
+    <div class="fg" id="usr-permisos-section">
+      <label>Accesos por sección</label>
+      <div style="border:1.5px solid var(--b);border-radius:var(--rs);overflow:hidden" id="usr-permisos-list"></div>
+    </div>
+
+    <div class="fg">
+      <label>Estado</label>
+      <div style="display:flex;gap:10px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px">
+          <input type="radio" name="usr-activo" value="1" checked/> Activo
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px">
+          <input type="radio" name="usr-activo" value="0"/> Inactivo
+        </label>
+      </div>
+    </div>
+
+    <div class="mact">
+      <button class="btn-cancel" onclick="closeModal('modal-usuario')">Cancelar</button>
+      <button class="btn-save" onclick="saveUsuario()">Guardar usuario</button>
     </div>
   </div>
 </div>
@@ -771,23 +882,79 @@ window.addEventListener('load', function(){
 });
 
 // Credenciales locales para pruebas sin internet
+// ── USUARIOS DEL SISTEMA ─────────────────────────────────────────────────────
+var appUsuarios=[];  // [{id, nombre, email, password, rol, activo, terminales[], permisos{}, creadoEn}]
+
+function loadUsuarios(){
+  try{ var u=localStorage.getItem('pn_usuarios'); if(u) appUsuarios=JSON.parse(u); }catch(e){}
+}
+function saveUsuarios(){
+  try{ localStorage.setItem('pn_usuarios',JSON.stringify(appUsuarios)); }catch(e){}
+}
+loadUsuarios();
+
+// Secciones del sistema con sus permisos
+var SECCIONES_PERMISOS=[
+  {id:'dashboard',   label:'📊 Dashboard',        roles:['admin','socio','pdv']},
+  {id:'puntos',      label:'🏪 Puntos de Venta',   roles:['admin']},
+  {id:'importar',    label:'📂 Importar CSV',       roles:['admin']},
+  {id:'operaciones', label:'🔍 Operaciones',        roles:['admin','socio','pdv']},
+  {id:'historial',   label:'📅 Historial',          roles:['admin','socio']},
+  {id:'guardar',     label:'💾 Guardar Semana',     roles:['admin']},
+  {id:'liquidaciones',label:'📋 Liquidaciones PDF', roles:['admin','pdv']},
+  {id:'balance',     label:'💰 Balance General',    roles:['admin','socio']},
+  {id:'conciliacion',label:'💵 Liquidar',           roles:['admin']},
+  {id:'caja',        label:'🏦 Caja',               roles:['admin']},
+  {id:'comisiones',  label:'📈 Comisiones',         roles:['admin','socio','pdv']},
+  {id:'usuarios',    label:'👥 Usuarios',           roles:['admin']},
+  {id:'socios',      label:'🤝 Panel Socios',       roles:['admin','socio']},
+];
+
 var LOCAL_USERS={
   'admin@paynorth.com':'YxddK$VhLH2XyD6',
   'socio@paynorth.com':'Usuario32'
 };
 
 function entrarConDatos(email){
-  var usr=USERS[email]||{role:'admin',name:email.split('@')[0]};
-  role=usr.role;
+  // Buscar en appUsuarios primero (sistema de usuarios creados por admin)
+  var appUsr=getUsuarioByEmail(email);
+  var rolFinal, nombreFinal, permFinal;
+
+  if(appUsr){
+    rolFinal=appUsr.rol;
+    nombreFinal=appUsr.nombre;
+    permFinal=appUsr.permisos;
+  } else {
+    // Fallback para admin hardcodeado
+    var legacy=USERS[email]||{role:'admin',name:email.split('@')[0]};
+    rolFinal=legacy.role||'admin';
+    nombreFinal=legacy.name||email.split('@')[0];
+    permFinal=null;
+  }
+
+  role=rolFinal;
+  window._currentUserPermisos=permFinal;
+  window._currentUserTerminales=appUsr?(appUsr.terminales||[]):[];
+  window._currentAppUsr=appUsr||null;
+
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('sav').textContent=usr.name[0].toUpperCase();
-  document.getElementById('snm').textContent=usr.name;
-  document.getElementById('srl').textContent=role==='admin'?'Administrador':'Punto de Venta';
+  document.getElementById('sav').textContent=nombreFinal[0].toUpperCase();
+  document.getElementById('snm').textContent=nombreFinal;
+  document.getElementById('srl').textContent=
+    rolFinal==='admin'?'Administrador':
+    rolFinal==='socio'?'Socio':
+    'Punto de Venta';
+
   buildNav();
+
+  // Aplicar restricciones de permisos si no es admin
+  if(rolFinal!=='admin'&&permFinal){
+    setTimeout(function(){buildNavFromPermisos(appUsr);},50);
+  }
+
   var esLocal=window.location.protocol==='file:';
   if(esLocal){
-    // Local: usar datos hardcodeados, no esperar Supabase
     loadHistorial();
     navigate('dashboard');
   } else {
@@ -808,8 +975,20 @@ function doLogin(){
   var btn=document.querySelector('.btn-p');
   if(btn){btn.textContent='Entrando...';btn.disabled=true;}
 
-  // Verificar credenciales locales primero (funciona siempre, online y offline)
-  if(!LOCAL_USERS[u]||LOCAL_USERS[u]!==p){
+  // Verificar en appUsuarios primero, luego en LOCAL_USERS
+  var appUsr=appUsuarios.find(function(x){return x.email===u;});
+  var passwordOk=false;
+  if(appUsr){
+    if(appUsr.activo===false){
+      if(btn){btn.textContent='Ingresar';btn.disabled=false;}
+      toast('Usuario inactivo. Contactá al administrador.');
+      return;
+    }
+    passwordOk=(appUsr.password===p);
+  } else {
+    passwordOk=(LOCAL_USERS[u]&&LOCAL_USERS[u]===p);
+  }
+  if(!passwordOk){
     if(btn){btn.textContent='Ingresar';btn.disabled=false;}
     toast('Email o contrasena incorrectos');
     return;
@@ -849,7 +1028,7 @@ function doLogout(){
   historial={};
 }
 
-var navAdmin=[{id:'dashboard',ic:'📊',lbl:'Dashboard'},{id:'puntos',ic:'🏪',lbl:'Puntos de Venta'},{id:'importar',ic:'📂',lbl:'Importar de Payway'},{id:'operaciones',ic:'🔍',lbl:'Operaciones'},{id:'historial',ic:'📅',lbl:'Historial'},{id:'guardar',ic:'💾',lbl:'Guardar Semana'},{id:'liquidaciones',ic:'📋',lbl:'Liquidaciones'},{id:'balance',ic:'💰',lbl:'Balance General'},{id:'conciliacion',ic:'💵',lbl:'Liquidar'},{id:'caja',ic:'🏦',lbl:'Caja'},{id:'comisiones',ic:'📈',lbl:'Comisiones'}];
+var navAdmin=[{id:'dashboard',ic:'📊',lbl:'Dashboard'},{id:'puntos',ic:'🏪',lbl:'Puntos de Venta'},{id:'importar',ic:'📂',lbl:'Importar de Payway'},{id:'operaciones',ic:'🔍',lbl:'Operaciones'},{id:'historial',ic:'📅',lbl:'Historial'},{id:'guardar',ic:'💾',lbl:'Guardar Semana'},{id:'liquidaciones',ic:'📋',lbl:'Liquidaciones'},{id:'balance',ic:'💰',lbl:'Balance General'},{id:'conciliacion',ic:'💵',lbl:'Ventas'},{id:'caja',ic:'🏦',lbl:'Caja'},{id:'socios',ic:'🤝',lbl:'Socios'},{id:'comisiones',ic:'📈',lbl:'Comisiones'},{id:'usuarios',ic:'👥',lbl:'Usuarios'}];
 var navPDV=[{id:'mi-panel',ic:'🏪',lbl:'Mi Panel'},{id:'mis-comisiones',ic:'📋',lbl:'Mis Comisiones'}];
 
 function buildNav(){
@@ -863,7 +1042,7 @@ function navigate(page){
   if(el)el.classList.add('active');
   var fab=document.getElementById('fab-btn');
   if(fab)fab.remove();
-  var fns={dashboard:renderDashboard,puntos:renderPuntos,importar:renderImportar,operaciones:renderOperaciones,historial:renderHistorial,guardar:renderGuardar,liquidaciones:renderLiquidaciones,balance:renderBalance,conciliacion:renderConciliacion,caja:renderCaja,comisiones:renderComisiones,'mi-panel':renderMiPanel,'mis-comisiones':renderMisComisiones};
+  var fns={dashboard:renderDashboard,puntos:renderPuntos,importar:renderImportar,operaciones:renderOperaciones,historial:renderHistorial,guardar:renderGuardar,liquidaciones:renderLiquidaciones,balance:renderBalance,conciliacion:renderConciliacion,caja:renderCaja,socios:renderSocios,comisiones:renderComisiones,usuarios:renderUsuarios,'mi-panel':renderMiPanel,'mis-comisiones':renderMisComisiones};
   var mc=document.getElementById('mc');
   try{
     mc.innerHTML=fns[page]?fns[page]():'';
@@ -892,12 +1071,29 @@ function navigate(page){
 function fmt(n){return'$'+Math.round(n).toLocaleString('es-AR');}
 function pct(n){return(n||0).toFixed(2)+'%';}
 function simVol(p){var v=p.volMensual||0;return{cred:v*.55,deb:v*.30,qr:v*.15};}
-function calcTx(p){
-  var txs=transactions.filter(function(t){return t.terminal===p.terminal;});
-  if(txs.length){
-    return{cred:txs.reduce(function(s,t){return s+(t.tipo==='credito'?t.monto:0);},0),deb:txs.reduce(function(s,t){return s+(t.tipo==='debito'?t.monto:0);},0),qr:txs.reduce(function(s,t){return s+(t.tipo==='qr'?t.monto:0);},0),real:true};
+function getActiveTxs(){
+  // Siempre leer del historial — el CSV es solo para importar y guardar
+  var sems=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+  if(sems.length>0&&sems[0].txs&&sems[0].txs.length>0){
+    return{txs:sems[0].txs,fuente:'historial:'+sems[0].label};
   }
-  return Object.assign({},simVol(p),{real:false});
+  return{txs:[],fuente:'vacio'};
+}
+
+function calcTx(p){
+  var src=getActiveTxs();
+  var txs=src.txs.filter(function(t){return t.terminal===p.terminal;});
+  if(txs.length){
+    return{
+      cred:txs.reduce(function(s,t){return s+(t.tipo==='credito'?t.monto:0);},0),
+      deb:txs.reduce(function(s,t){return s+(t.tipo==='debito'?t.monto:0);},0),
+      qr:txs.reduce(function(s,t){return s+(t.tipo==='qr'?t.monto:0);},0),
+      real:true,
+      fuente:src.fuente,
+      txs:txs
+    };
+  }
+  return{cred:0,deb:0,qr:0,real:false,fuente:src.fuente,txs:[]};
 }
 function calcCom(p,v){return(v.cred*p.comCred/100)+(v.deb*p.comDeb/100)+(v.qr*p.comQr/100);}
 function calcCosto(v){return(v.cred*costoPN.cred/100)+(v.deb*costoPN.deb/100)+(v.qr*costoPN.qr/100);}
@@ -920,17 +1116,21 @@ function weekRange(){
 function renderDashboard(){
   var t=calcTotales();
   var activos=pdvs.filter(function(p){return p.estado==='activo';}).length;
-  var hasReal=transactions.length>0;
-  var volActual=hasReal
-    ? transactions.filter(function(t){return t.estado==='aprobada';}).reduce(function(s,t){return s+t.monto;},0)
-    : 0;
+  var hasReal=transactions.length>0; // Solo para el banner de CSV cargado
+
+  // Volumen siempre del historial
+  var semsD=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+  var semReciente=semsD[0]||null;
+  var volActual=semReciente?semReciente.vol:0;
+  var volFuente=semReciente?'historial:'+semReciente.label:'vacio';
+
   var semanas=Object.keys(historial).length;
 
   return '<div class="ph"><h2>Dashboard</h2><p>Resumen general del sistema</p></div>'
     +(hasReal?'<div class="info-banner"><span class="ii">✅</span><span>'+transactions.length+' transacciones cargadas — '+transactions.filter(function(t){return t.estado==="aprobada";}).length+' aprobadas. <strong>Recordá guardar esta semana antes de cargar la siguiente.</strong></span></div>':'')
     +'<div class="sg">'
     +'<div class="sc"><div class="slbl">PDV Activos</div><div class="sval">'+activos+'</div><div class="ssub">de '+pdvs.length+' registrados</div></div>'
-    +'<div class="sc"><div class="slbl">Vol. semana actual</div><div class="sval" style="font-size:18px">'+(volActual>0?fmt(volActual):'$0')+'</div><div class="ssub">'+(hasReal?'datos importados':'sin datos cargados')+'</div></div>'
+    +'<div class="sc"><div class="slbl">Vol. semana actual</div><div class="sval" style="font-size:18px">'+(volActual>0?fmt(volActual):'$0')+'</div><div class="ssub">'+(volFuente!=='vacio'?volFuente.replace('historial:',''):'sin semanas guardadas')+'</div></div>'
     +'<div class="sc"><div class="slbl">Cobrado a Clientes</div><div class="sval" style="font-size:18px;color:var(--gd)">'+fmt(t.cobrado)+'</div><span class="badge bg2">Comisiones</span></div>'
     +'<div class="sc"><div class="slbl">Neto PAYNORTH</div><div class="sval" style="font-size:18px;color:var(--g)">'+fmt(t.neto)+'</div><span class="badge bg2">Ganancia</span></div>'
     +'</div>'
@@ -963,39 +1163,108 @@ function renderDashboard(){
 function renderChart(periodo){
   var data=getChartData(periodo);
   if(!data.length){
-    return'<div style="height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">'
-      +'<div style="font-size:24px;opacity:.15">📊</div>'
-      +'<div style="font-size:13px;color:var(--t3)">Sin datos — importá el CSV y guardá la semana para ver el historial</div>'
+    return'<div style="height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">'
+      +'<div style="font-size:28px;opacity:.12">📈</div>'
+      +'<div style="font-size:13px;color:var(--t3)">Sin datos — guardá semanas para ver el gráfico</div>'
       +'</div>';
   }
-  var maxV=Math.max.apply(null,data.map(function(d){return d.vol;}));
-  if(maxV===0) maxV=1;
+
+  var W=900, H=170, padL=52, padR=16, padT=28, padB=32;
   var n=data.length;
-  var gap=n>30?2:n>15?4:6;
-  // Show label every N bars to avoid clutter
-  var every=n<=6?1:n<=12?2:n<=24?3:6;
-  var html='';
+  var maxV=Math.max.apply(null,data.map(function(d){return d.vol||0;}));
+  if(maxV===0) maxV=1;
+  var innerW=W-padL-padR;
+  var innerH=H-padT-padB;
+
+  // If only one point, add a zero anchor at the left
   if(n===1){
-    html+='<div style="font-size:11px;color:var(--t3);text-align:center;margin-bottom:4px">'+data[0].label+'</div>';
+    data=[{label:'Inicio',vol:0},data[0]];
+    n=2;
   }
-  html+='<div style="display:flex;align-items:flex-end;gap:'+gap+'px;height:130px;padding-top:6px">';
-  data.forEach(function(d,i){
-    var h=Math.max(4,Math.round(d.vol/maxV*100));
-    var isLast=i===n-1;
-    var kval=d.vol>=1000000?(d.vol/1000000).toFixed(1)+'M':d.vol>=1000?(d.vol/1000).toFixed(0)+'k':'$0';
-    // Label: only show for first, every Nth, and last
-    var showLbl=n>1&&((i===0)||(i%every===0)||isLast);
-    // Short label: "Ene 25" from "Sem Ene 2025"
-    var parts=d.label.replace('Sem ','').split(' ');
-    var lbl=parts.length>=2?parts[0]+' '+String(parts[parts.length-1]).slice(-2):d.label;
-    html+='<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;min-width:0;cursor:default" title="'+d.label+': '+fmt(d.vol)+'">';
-    html+='<div style="font-size:9px;color:var(--t2);white-space:nowrap">'+kval+'</div>';
-    html+='<div style="width:100%;border-radius:3px 3px 0 0;background:'+(isLast?'var(--g)':'var(--gl)')+';border:1px solid var(--b2);height:'+h+'px"></div>';
-    html+='<div style="font-size:9px;color:var(--t3);white-space:nowrap;text-align:center;min-height:13px">'+(showLbl?lbl:'')+'</div>';
-    html+='</div>';
+
+  // Points
+  var pts=data.map(function(d,i){
+    var x=padL+i/(n-1)*innerW;
+    var y=padT+innerH-(d.vol/maxV*innerH);
+    return{x:x,y:y,vol:d.vol,label:d.label};
   });
-  html+='</div>';
-  return html;
+
+  // SVG path (smooth line with cubic bezier)
+  function makePath(points){
+    if(points.length===1) return'M'+points[0].x+','+points[0].y;
+    var d='M'+points[0].x+','+points[0].y;
+    for(var i=1;i<points.length;i++){
+      var cp1x=points[i-1].x+(points[i].x-points[i-1].x)*0.5;
+      var cp1y=points[i-1].y;
+      var cp2x=points[i].x-(points[i].x-points[i-1].x)*0.5;
+      var cp2y=points[i].y;
+      d+=' C'+cp1x+','+cp1y+' '+cp2x+','+cp2y+' '+points[i].x+','+points[i].y;
+    }
+    return d;
+  }
+
+  var linePath=makePath(pts);
+
+  // Area fill path (close below)
+  var areaPath=linePath
+    +' L'+pts[pts.length-1].x+','+(padT+innerH)
+    +' L'+pts[0].x+','+(padT+innerH)+' Z';
+
+  // Y axis labels
+  var yLabels='';
+  for(var step=0;step<=4;step++){
+    var val=maxV*(step/4);
+    var y=padT+innerH-(step/4*innerH);
+    var lbl=val>=1000000?(val/1000000).toFixed(1)+'M':val>=1000?(val/1000).toFixed(0)+'k':'0';
+    yLabels+='<text x="'+(padL-6)+'" y="'+(y+4)+'" text-anchor="end" fill="#9cb8a8" font-size="10" font-family="Outfit,sans-serif">'+lbl+'</text>';
+    yLabels+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#e8f2ec" stroke-width="1"/>';
+  }
+
+  // X axis labels
+  var every=n<=6?1:n<=12?2:n<=20?3:Math.ceil(n/8);
+  var xLabels='';
+  pts.forEach(function(p,i){
+    if(i===0||i===n-1||i%every===0){
+      var parts=(p.label||'').replace('Sem ','').split(' ');
+      var lbl=parts.length>=2?parts[0]+' '+String(parts[parts.length-1]).slice(-2):p.label;
+      xLabels+='<text x="'+p.x+'" y="'+(H-6)+'" text-anchor="middle" fill="#9cb8a8" font-size="10" font-family="Outfit,sans-serif">'+lbl+'</text>';
+    }
+  });
+
+  // Dots and tooltips
+  var dots='';
+  pts.forEach(function(p,i){
+    var isLast=i===n-1;
+    var isZero=p.vol===0;
+    var kval=p.vol>=1000000?(p.vol/1000000).toFixed(2)+'M':p.vol>=1000?(p.vol/1000).toFixed(0)+'k':fmt(p.vol);
+    dots+='<g>';
+    if(!isZero){
+      dots+='<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isLast?5:3)+'" fill="'+(isLast?'var(--g)':'#fff')+'" stroke="var(--g)" stroke-width="'+(isLast?0:2)+'"/>';
+    }
+    // Tooltip on hover
+    dots+='<circle cx="'+p.x+'" cy="'+p.y+'" r="12" fill="transparent" style="cursor:default">'
+      +'<title>'+p.label+': $'+kval+'</title></circle>';
+    // Show value for last point (only if vol > 0)
+    if(isLast&&p.vol>0){
+      var anchor=p.x>W-80?'end':p.x<80?'start':'middle';
+      dots+='<text x="'+p.x+'" y="'+(p.y-12)+'" text-anchor="'+anchor+'" fill="var(--gd)" font-size="11" font-weight="700" font-family="Outfit,sans-serif">$'+kval+'</text>';
+    }
+    dots+='</g>';
+  });
+
+  return'<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">'
+    +'<defs>'
+    +'<linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="var(--g)" stop-opacity="0.18"/>'
+    +'<stop offset="100%" stop-color="var(--g)" stop-opacity="0"/>'
+    +'</linearGradient>'
+    +'</defs>'
+    +yLabels
+    +'<path d="'+areaPath+'" fill="url(#chartGrad)"/>'
+    +'<path d="'+linePath+'" fill="none" stroke="var(--g)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +dots
+    +xLabels
+    +'</svg>';
 }
 
 function guardarSemanaModal(){
@@ -1223,7 +1492,7 @@ function asignarAGrupo(idx, grupoId){
 
 function renderImportar(){
   var importTab=window._importTab||'tarjetas';
-  var hasTx=transactions.length>0;
+  var hasTx=transactions.filter(function(t){return !t.esQRTransferencia;}).length>0;
   var hasQR=transactionsQR.length>0;
 
   var html='<div class="ph"><h2>Importar de Payway</h2><p>Cargá los CSV de transacciones desde mi.payway.com.ar</p></div>';
@@ -1255,16 +1524,64 @@ function renderImportarTarjetas(hasTx){
   html+='</div></div>';
 
   if(hasTx){
-    var apr=transactions.filter(function(t){return t.estado==='aprobada';});
+    var txTarjetas=transactions.filter(function(t){return !t.esQRTransferencia;});
+    var apr=txTarjetas.filter(function(t){return t.estado==='aprobada';});
     var vol=apr.reduce(function(s,t){return s+t.monto;},0);
-    var rec=transactions.filter(function(t){return t.estado!=='aprobada';}).length;
-    html+='<div class="card"><div class="ctitle">✅ '+transactions.length+' transacciones cargadas</div>';
+    var rec=txTarjetas.filter(function(t){return t.estado!=='aprobada';}).length;
+    html+='<div class="card"><div class="ctitle">✅ '+txTarjetas.length+' transacciones de tarjetas cargadas</div>';
     html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">';
-    html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px"><div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Total</div><div style="font-size:22px;font-weight:700;margin-top:4px">'+transactions.length+'</div></div>';
+    html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px"><div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Total</div><div style="font-size:22px;font-weight:700;margin-top:4px">'+txTarjetas.length+'</div></div>';
     html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px"><div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Aprobadas</div><div style="font-size:22px;font-weight:700;margin-top:4px;color:var(--gd)">'+apr.length+'</div></div>';
     html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px"><div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Rechazadas</div><div style="font-size:22px;font-weight:700;margin-top:4px;color:var(--red)">'+rec+'</div></div>';
     html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px"><div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Vol. aprobado</div><div style="font-size:18px;font-weight:700;margin-top:4px">'+fmt(vol)+'</div></div>';
-    html+='</div></div>';
+    html+='</div>';
+    // Mostrar también QR si hay
+    var txQR=transactions.filter(function(t){return t.esQRTransferencia;});
+    if(txQR.length>0){
+      html+='<div style="margin-top:10px;padding:10px 14px;background:var(--gp);border-radius:var(--rs);font-size:13px;color:var(--gd)">';
+      html+='📱 <strong>'+txQR.length+'</strong> transferencias QR también cargadas — total combinado: <strong>'+transactions.length+'</strong> operaciones';
+      html+='</div>';
+    }
+    html+='</div>';
+
+    // Desglose por terminal
+    var porTermTarj={};
+    apr.forEach(function(t){
+      if(!porTermTarj[t.terminal]) porTermTarj[t.terminal]={cred:0,deb:0,cantCred:0,cantDeb:0};
+      if(t.tipo==='credito'){porTermTarj[t.terminal].cred+=t.monto;porTermTarj[t.terminal].cantCred++;}
+      else if(t.tipo==='debito'){porTermTarj[t.terminal].deb+=t.monto;porTermTarj[t.terminal].cantDeb++;}
+    });
+    if(Object.keys(porTermTarj).length){
+      html+='<div class="card" style="margin-top:0">';
+      html+='<div class="ctitle" style="margin-bottom:10px">Resumen por terminal ('+apr.length+' aprobadas)</div>';
+      html+='<div class="tw"><table style="font-size:13px"><thead><tr>';
+      html+='<th>Terminal</th><th>Nombre</th><th style="text-align:center">Cant. Créd.</th><th style="text-align:right">Vol. Créd.</th><th style="text-align:center">Cant. Déb.</th><th style="text-align:right">Vol. Déb.</th><th style="text-align:right">Total</th>';
+      html+='</tr></thead><tbody>';
+      var totTarjC=0,totTarjD=0;
+      Object.keys(porTermTarj).sort().forEach(function(term){
+        var r=porTermTarj[term];
+        var pdv=pdvs.find(function(p){return p.terminal===term;});
+        totTarjC+=r.cred; totTarjD+=r.deb;
+        html+='<tr>';
+        html+='<td class="mono">'+term+'</td>';
+        html+='<td><strong>'+(pdv&&pdv.nombre!=='Prueba'?pdv.nombre:'—')+'</strong></td>';
+        html+='<td style="text-align:center;color:var(--t3)">'+r.cantCred+'</td>';
+        html+='<td style="text-align:right">'+(r.cred>0?fmt(r.cred):'—')+'</td>';
+        html+='<td style="text-align:center;color:var(--t3)">'+r.cantDeb+'</td>';
+        html+='<td style="text-align:right">'+(r.deb>0?fmt(r.deb):'—')+'</td>';
+        html+='<td style="text-align:right;font-weight:700;color:var(--gd)">'+fmt(r.cred+r.deb)+'</td>';
+        html+='</tr>';
+      });
+      html+='<tr style="background:var(--s2)">';
+      html+='<td colspan="2" style="padding:10px 13px;font-weight:600">TOTAL</td>';
+      html+='<td style="text-align:center;padding:10px 13px">'+apr.filter(function(t){return t.tipo==='credito';}).length+'</td>';
+      html+='<td style="text-align:right;padding:10px 13px;font-weight:600">'+fmt(totTarjC)+'</td>';
+      html+='<td style="text-align:center;padding:10px 13px">'+apr.filter(function(t){return t.tipo==='debito';}).length+'</td>';
+      html+='<td style="text-align:right;padding:10px 13px;font-weight:600">'+fmt(totTarjD)+'</td>';
+      html+='<td style="text-align:right;padding:10px 13px;font-weight:700;color:var(--gd)">'+fmt(totTarjC+totTarjD)+'</td>';
+      html+='</tr>';
+      html+='</tbody></table></div></div>';
+    }
   }
   return html;
 }
@@ -1491,7 +1808,7 @@ function dzLeave(){document.getElementById('dz').classList.remove('drag');}
 function dzDrop(e){e.preventDefault();dzLeave();var f=e.dataTransfer.files[0];if(f)parseFile(f);}
 function loadCSV(inp){if(inp.files[0])parseFile(inp.files[0]);}
 function parseFile(file){var r=new FileReader();r.onload=function(e){processCSV(e.target.result);};r.readAsText(file,'UTF-8');}
-function clearTx(){transactions=[];toast('Datos importados eliminados');navigate('importar');}
+function clearTx(){transactions=transactions.filter(function(t){return t.esQRTransferencia;});toast('Datos de tarjetas eliminados');navigate('importar');}
 
 function processCSV(text){
   var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
@@ -1627,17 +1944,28 @@ function processCSV(text){
     });
   }
 
-  transactions=txs;
+  // Mantener las QR que ya estaban cargadas — no sobreescribir
+  var qrExistentes=transactions.filter(function(t){return t.esQRTransferencia;});
+  // Dedup tarjetas por nroCupon
+  var existingCupones={};
+  transactions.filter(function(t){return !t.esQRTransferencia;}).forEach(function(t){
+    if(t.nroCupon) existingCupones[t.nroCupon]=true;
+  });
+  var nuevasTarjetas=txs.filter(function(t){
+    return !t.nroCupon||!existingCupones[t.nroCupon];
+  });
+  // Reconstruir: tarjetas nuevas + QR existentes
+  transactions=nuevasTarjetas.concat(qrExistentes);
+
   var aprobadas=txs.filter(function(t){return t.estado==='aprobada';}).length;
   var rechazadas=txs.filter(function(t){return t.estado==='rechazada';}).length;
   var anuladas=txs.filter(function(t){return t.estado==='anulada';}).length;
   var msg='✅ '+txs.length+' transacciones importadas — '+aprobadas+' aprobadas · '+rechazadas+' rechazadas';
   if(anuladas>0) msg+=' · '+anuladas+' anuladas';
   if(omitidas>0) msg+=' · '+omitidas+' filas ignoradas';
+  if(qrExistentes.length>0) msg+=' · '+qrExistentes.length+' QR conservadas';
   toast(msg);
-  // Ofrecer guardar si hay muchas transacciones
   navigate('importar');
-  // Mostrar botón de guardar semana en el importar
 }
 
 function loadDemo(){
@@ -1661,15 +1989,156 @@ function loadDemo(){
 }
 
 function renderLiquidaciones(){
-  var wr=weekRange();
-  return'<div class="ph"><h2>Liquidaciones</h2><p>Liquidación semanal por punto de venta</p></div>'
-    +'<div class="info-banner"><span class="ii">📅</span><span>Semana: <strong>'+wr.from+' — '+wr.to+'</strong>. Generá y enviá la liquidación a cada cliente.</span></div>'
-    +'<div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="bsm pdf" style="padding:10px 18px;font-size:14px" onclick="generateAll()">📄 Generar todas</button></div>'
-    +pdvs.filter(function(p){return p.estado==='activo';}).map(function(p){
+  // Selector de semana
+  var semanas=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+  var liqPeriodo=window._liqPeriodo||'actual';
+  var opcionesHTML='<option value="actual">Semana actual'+(transactions.length>0?' (CSV cargado)':' (última guardada)')+'</option>';
+  semanas.forEach(function(h){opcionesHTML+='<option value="'+h.key+'"'+(liqPeriodo===h.key?' selected':'')+'>'+h.label+' ('+h.from+' al '+h.to+')</option>';});
+
+  // Obtener txs del período
+  var txsFuente=[];
+  var periodoLabel='';
+  var periodoFrom='', periodoTo='';
+  if(liqPeriodo==='actual'){
+    // Usar la semana más reciente del historial
+    if(semanas.length>0&&semanas[0].txs){
+      txsFuente=semanas[0].txs;
+      periodoLabel=semanas[0].label;
+      periodoFrom=semanas[0].from;
+      periodoTo=semanas[0].to;
+    }
+  } else {
+    var sem=historial[liqPeriodo];
+    if(sem&&sem.txs){txsFuente=sem.txs;periodoLabel=sem.label;periodoFrom=sem.from;periodoTo=sem.to;}
+  }
+
+  var html='<div class="ph"><h2>Liquidaciones</h2><p>Liquidación semanal por punto de venta</p></div>';
+
+  // Selector
+  html+='<div class="card" style="margin-bottom:16px">'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<div style="font-size:14px;font-weight:500;color:var(--t2)">Semana:</div>'
+    +'<select onchange="window._liqPeriodo=this.value;navigate(&quot;liquidaciones&quot;)" style="flex:1;min-width:220px;padding:10px 14px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:14px;color:var(--t);background:#fff;cursor:pointer">'+opcionesHTML+'</select>'
+    +'<button class="bsm pdf" style="padding:10px 18px;font-size:13px" onclick="generateAll()">📄 Generar todas</button>'
+    +'</div>'
+    +(periodoLabel?'<div style="margin-top:8px;font-size:12px;color:var(--gd)">📅 '+periodoLabel+(periodoFrom?' — '+periodoFrom+' al '+periodoTo:'')+'</div>':'')
+    +'</div>';
+
+  // Calcular por terminal usando txsFuente
+  var activos=pdvs.filter(function(p){return p.estado==='activo';});
+  var conDatos=activos.filter(function(p){
+    return txsFuente.some(function(t){return t.terminal===p.terminal&&t.estado==='aprobada';});
+  });
+  var sinDatos=activos.filter(function(p){
+    return !txsFuente.some(function(t){return t.terminal===p.terminal&&t.estado==='aprobada';});
+  });
+
+  if(!txsFuente.length){
+    html+='<div class="info-banner" style="background:var(--abg);border-color:#f0c879">'
+      +'<span class="ii" style="color:var(--amb)">⚠️</span>'
+      +'<div style="color:var(--amb)">No hay datos para este período. Importá el CSV o seleccioná una semana guardada.</div>'
+      +'</div>';
+    return html;
+  }
+
+  // Terminales con datos
+  if(conDatos.length){
+    html+='<div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--t2)">'+conDatos.length+' terminales con operaciones</div>';
+    html+=conDatos.map(function(p){
       var idx=pdvs.indexOf(p);
-      var v=calcTx(p);var com=calcCom(p,v);var volT=v.cred+v.deb+v.qr;
-      return'<div class="liq-card"><div class="liq-info"><h4>'+p.nombre+'</h4><p>Terminal '+p.terminal+' &middot; '+p.resp+' &middot; CBU: '+(p.cbu||'No cargado')+'</p><p style="margin-top:4px;font-size:12px;color:'+(v.real?'var(--g)':'var(--amb)')+'">'+( v.real?'✅ Datos reales importados':'⚠️ Datos estimados — importá el CSV para datos reales')+'</p></div><div class="liq-amounts"><div class="liq-amt"><div class="lbl">Vol. procesado</div><div class="val">'+fmt(volT)+'</div></div><div class="liq-amt"><div class="lbl">A cobrar</div><div class="val" style="color:var(--gd)">'+fmt(com)+'</div></div><button class="bsm pdf" style="padding:10px 16px" onclick="openLiqModal('+idx+')">📄 PDF</button></div></div>';
+      var txsTerm=txsFuente.filter(function(t){return t.terminal===p.terminal&&t.estado==='aprobada';});
+      var cred=txsTerm.reduce(function(s,t){return s+(t.tipo==='credito'?t.monto:0);},0);
+      var deb=txsTerm.reduce(function(s,t){return s+(t.tipo==='debito'?t.monto:0);},0);
+      var qr=txsTerm.reduce(function(s,t){return s+(t.tipo==='qr'?t.monto:0);},0);
+      var v={cred:cred,deb:deb,qr:qr,real:true,txs:txsTerm};
+      var com=calcCom(p,v);
+      var volT=cred+deb+qr;
+      var entrega=volT-com;
+      return'<div class="liq-card">'
+        +'<div class="liq-info">'
+        +'<h4>'+p.nombre+'</h4>'
+        +'<p>Terminal '+p.terminal+(p.resp?' &middot; '+p.resp:'')+(p.cbu?' &middot; CBU: '+p.cbu:'')+'</p>'
+        +'<p style="margin-top:4px;font-size:12px;color:var(--t3)">'+txsTerm.length+' ops — Créd: '+fmt(cred)+' · Déb: '+fmt(deb)+' · QR: '+fmt(qr)+'</p>'
+        +'</div>'
+        +'<div class="liq-amounts">'
+        +'<div class="liq-amt"><div class="lbl">Vol. procesado</div><div class="val">'+fmt(volT)+'</div></div>'
+        +'<div class="liq-amt"><div class="lbl">A cobrar</div><div class="val" style="color:var(--gd)">'+fmt(com)+'</div></div>'
+        +'<div class="liq-amt"><div class="lbl">A entregar</div><div class="val" style="color:var(--g);font-weight:700">'+fmt(entrega)+'</div></div>'
+        +'<button class="bsm pdf" style="padding:10px 16px" onclick="openLiqModalConDatos('+idx+',\''+liqPeriodo+'\')">📄 PDF</button>'
+        +'</div></div>';
     }).join('');
+  }
+
+  // Terminales sin datos (colapsado)
+  if(sinDatos.length){
+    html+='<details style="margin-top:12px"><summary style="cursor:pointer;font-size:13px;color:var(--t3);padding:8px 0">'+sinDatos.length+' terminales sin operaciones en este período</summary>';
+    html+='<div style="margin-top:8px;display:grid;gap:6px">';
+    html+=sinDatos.map(function(p){
+      var idx=pdvs.indexOf(p);
+      return'<div class="liq-card" style="opacity:.6">'
+        +'<div class="liq-info"><h4>'+p.nombre+'</h4><p>Terminal '+p.terminal+'</p></div>'
+        +'<div class="liq-amounts">'
+        +'<div class="liq-amt"><div class="lbl">Vol. procesado</div><div class="val">$0</div></div>'
+        +'<div class="liq-amt"><div class="lbl">A cobrar</div><div class="val">$0</div></div>'
+        +'<button class="bsm pdf" style="padding:10px 16px" onclick="openLiqModal('+idx+')">📄 PDF</button>'
+        +'</div></div>';
+    }).join('');
+    html+='</div></details>';
+  }
+
+  return html;
+}
+
+function openLiqModalConDatos(idx, periodo){
+  liqIdx=idx;
+  window._liqPeriodoActual=periodo;
+  var p=pdvs[idx];
+  var txsFuente=[];
+  if(periodo==='actual'){
+    var semsOrd=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+    txsFuente=(semsOrd[0]&&semsOrd[0].txs)?semsOrd[0].txs:[];
+    if(semsOrd[0]) periodo=semsOrd[0].key;
+  } else {
+    var sem=historial[periodo];
+    if(sem&&sem.txs) txsFuente=sem.txs;
+  }
+  var txsTerm=txsFuente.filter(function(t){return t.terminal===p.terminal&&t.estado==='aprobada';});
+  var cred=txsTerm.reduce(function(s,t){return s+(t.tipo==='credito'?t.monto:0);},0);
+  var deb=txsTerm.reduce(function(s,t){return s+(t.tipo==='debito'?t.monto:0);},0);
+  var qr=txsTerm.reduce(function(s,t){return s+(t.tipo==='qr'?t.monto:0);},0);
+  var v={cred:cred,deb:deb,qr:qr,real:true,txs:txsTerm};
+  var com=calcCom(p,v);
+  var volTotal=cred+deb+qr;
+  var entrega=volTotal-com;
+
+  var sem2=historial[periodo]||null;
+  var from=sem2?sem2.from:weekRange().from;
+  var to=sem2?sem2.to:weekRange().to;
+
+  document.getElementById('liq-content').innerHTML=
+    '<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:14px;margin-bottom:16px">'
+    +'<div style="font-weight:700;font-size:16px;margin-bottom:4px">'+p.nombre+'</div>'
+    +'<div style="font-size:13px;color:var(--t3)">Terminal '+p.terminal+(p.dir?' &nbsp;·&nbsp; '+p.dir:'')+'</div>'
+    +'</div>'
+    +'<div class="mrow" style="margin-bottom:16px">'
+    +'<div class="fgm"><label>Desde</label><input id="lf" value="'+from+'"/></div>'
+    +'<div class="fgm"><label>Hasta</label><input id="lt" value="'+to+'"/></div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">'
+    +'<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:12px">'
+    +'<div style="font-size:11px;color:var(--t3);font-weight:600;margin-bottom:4px">VOL. TOTAL</div>'
+    +'<div style="font-size:18px;font-weight:700">'+fmt(volTotal)+'</div></div>'
+    +'<div style="background:var(--rbg);border:1px solid #f5c6c1;border-radius:var(--rs);padding:12px">'
+    +'<div style="font-size:11px;color:var(--red);font-weight:600;margin-bottom:4px">COMISION</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--red)">-'+fmt(com)+'</div></div>'
+    +'<div style="background:var(--gl);border:1px solid var(--b2);border-radius:var(--rs);padding:12px">'
+    +'<div style="font-size:11px;color:var(--gd);font-weight:600;margin-bottom:4px">A ENTREGAR</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--g)">'+fmt(entrega)+'</div></div>'
+    +'</div>';
+
+  // Store v for PDF generation
+  window._liqVActual=v;
+  document.getElementById('modal-liq').classList.add('open');
 }
 
 function openLiqModal(idx){
@@ -1701,9 +2170,35 @@ function openLiqModal(idx){
 }
 
 function generatePDF(){
-  var p=pdvs[liqIdx];var v=calcTx(p);
+  var p=pdvs[liqIdx];
   var from=document.getElementById('lf').value;
   var to=document.getElementById('lt').value;
+
+  // Rebuild v with real txs — use _liqVActual if it has txs, otherwise search historial
+  var v=window._liqVActual;
+  if(!v||!v.txs||!v.txs.length){
+    // Search in historial for the week matching from/to
+    var bestSem=null;
+    Object.values(historial).forEach(function(h){
+      if(h.from===from||h.to===to) bestSem=h;
+    });
+    // If no exact match, use the most recent week
+    if(!bestSem){
+      var semsG=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+      if(semsG[0]) bestSem=semsG[0];
+    }
+    var allTxs=bestSem&&bestSem.txs?bestSem.txs:[];
+    var txsTerm=allTxs.filter(function(t){
+      return t.terminal===p.terminal&&t.estado==='aprobada';
+    });
+    console.log('PDF: terminal='+p.terminal+' txsTerm='+txsTerm.length+' from sem='+( bestSem?bestSem.label:'none'));
+    var cred=txsTerm.reduce(function(s,t){return s+(t.tipo==='credito'?t.monto:0);},0);
+    var deb=txsTerm.reduce(function(s,t){return s+(t.tipo==='debito'?t.monto:0);},0);
+    var qr=txsTerm.reduce(function(s,t){return s+(t.tipo==='qr'?t.monto:0);},0);
+    v={cred:cred,deb:deb,qr:qr,real:true,txs:txsTerm};
+  }
+  console.log('PDF v.txs.length=',v.txs?v.txs.length:0,'sample fecha=',(v.txs&&v.txs[0]?v.txs[0].fecha:'none'));
+
   var com=calcCom(p,v);
   buildPDF(p,v,from,to,'',com);
   closeModal('modal-liq');
@@ -1726,242 +2221,180 @@ function buildPDF(p,v,from,to,num,com){
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   var W=210, pH=297;
-
-  // ── Colores ────────────────────────────────────────────────────────────────
-  var C={
-    dark:  [22, 90, 58],    // verde oscuro header
-    mid:   [34, 139, 87],   // verde medio
-    light: [236, 248, 241], // verde clarito fondo
-    accent:[52, 197, 119],  // verde accent
-    white: [255,255,255],
-    gray:  [248,249,248],
-    line:  [220,232,224],
-    txt:   [30, 40, 34],
-    muted: [120,145,130],
-  };
-
+  var C={dark:[22,90,58],mid:[34,139,87],light:[236,248,241],accent:[52,197,119],
+    white:[255,255,255],gray:[248,249,248],line:[220,232,224],txt:[30,40,34],
+    muted:[120,145,130],red:[180,40,40]};
   var now=new Date();
   function fd(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
   var emision=fd(now);
+  var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function fv(val){return(val&&val>0)?'$'+Math.round(val).toLocaleString('es-AR'):'$ -';}
 
-  // ── HEADER ─────────────────────────────────────────────────────────────────
-  // Fondo blanco con borde verde izquierdo
-  doc.setFillColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.rect(0,0,8,pH,'F'); // borde izquierdo verde
+  // Header
+  doc.setFillColor(C.dark[0],C.dark[1],C.dark[2]);doc.rect(0,0,8,pH,'F');
+  doc.setFillColor(C.mid[0],C.mid[1],C.mid[2]);doc.circle(24,18,10,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(8.5);doc.setFont('helvetica','bold');
+  doc.text('Pay',24,15.5,{align:'center'});doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+  doc.text('North',24,20,{align:'center'});
+  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);doc.setFontSize(17);doc.setFont('helvetica','bold');
+  doc.text('PayNorth',38,16);doc.setFontSize(7.5);doc.setFont('helvetica','normal');
+  doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);doc.text('Soluciones de pago',38,21.5);
+  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);doc.setFontSize(11);doc.setFont('helvetica','bold');
+  doc.text('LIQUIDACION SEMANAL',W-12,12,{align:'right'});
+  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+  doc.text('Periodo: '+from+' al '+to,W-12,17,{align:'right'});
+  doc.text('Emision: '+emision,W-12,22,{align:'right'});
+  doc.text('Pagador: PayNorth',W-12,27,{align:'right'});
+  doc.setDrawColor(C.accent[0],C.accent[1],C.accent[2]);doc.setLineWidth(1);doc.line(12,32,W-12,32);
 
-  // Logo circular
-  doc.setFillColor(C.mid[0],C.mid[1],C.mid[2]);
-  doc.circle(28,22,14,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(11);doc.setFont('helvetica','bold');
-  doc.text('Pay',28,19,{align:'center'});
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.text('North',28,25,{align:'center'});
+  // Datos comercio
+  var y=36;
+  doc.setFillColor(C.light[0],C.light[1],C.light[2]);doc.roundedRect(12,y,W-24,18,3,3,'F');
+  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);doc.setFontSize(11);doc.setFont('helvetica','bold');
+  doc.text(p.nombre||'—',18,y+7);doc.setFontSize(7.5);doc.setFont('helvetica','normal');
+  doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);doc.text('Terminal: '+p.terminal,18,y+13);
+  if(p.cbu) doc.text('CBU/Alias: '+p.cbu,90,y+13);
+  if(p.dir) doc.text('Dir: '+p.dir,18,y+17);
+  y=60;
 
-  // Nombre empresa
-  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.setFontSize(22);doc.setFont('helvetica','bold');
-  doc.text('PayNorth',47,20);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
-  doc.text('Soluciones de pago',47,27);
+  // ── CALCULAR TOTALES POR DIA desde historial ────────────────────────────
+  // Encontrar la semana correcta en historial
+  var semana=null;
+  Object.values(historial).forEach(function(h){
+    if(h.from===from||h.to===to||h.key===window._liqPeriodoActual) semana=h;
+  });
+  if(!semana){
+    var semsG=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+    if(semsG[0]) semana=semsG[0];
+  }
 
-  // Info liquidación (derecha)
-  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text('LIQUIDACION SEMANAL',W-12,15,{align:'right'});
-  doc.setFontSize(8.5);doc.setFont('helvetica','normal');
-  doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
-  doc.text('Periodo: '+from+' al '+to,W-12,22,{align:'right'});
-  doc.text('Emision: '+emision,W-12,28,{align:'right'});
-  doc.text('Pagador: PayNorth',W-12,34,{align:'right'});
+  var txsList=semana&&semana.txs?semana.txs.filter(function(t){return t.terminal===p.terminal&&t.estado==='aprobada';}):[];
 
-  // Linea separadora
-  doc.setDrawColor(C.accent[0],C.accent[1],C.accent[2]);
-  doc.setLineWidth(1.5);
-  doc.line(12,40,W-12,40);
+  // Normalizar fecha DD/MM/YYYY
+  function normF(f){
+    if(!f) return '';
+    var pts=f.split('/');
+    if(pts.length<3) return f;
+    return String(pts[0]).padStart(2,'0')+'/'+String(pts[1]).padStart(2,'0')+'/'+pts[2];
+  }
 
-  // ── DATOS DEL COMERCIO ─────────────────────────────────────────────────────
-  var y=50;
-  doc.setFillColor(C.light[0],C.light[1],C.light[2]);
-  doc.roundedRect(12,y,W-24,28,3,3,'F');
-
-  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text(p.nombre||'—',18,y+10);
-
-  doc.setFontSize(8.5);doc.setFont('helvetica','normal');
-  doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
-  doc.text('Terminal: '+p.terminal,18,y+18);
-  if(p.resp) doc.text('Contacto: '+p.resp,80,y+18);
-  if(p.dir)  doc.text('Dir: '+p.dir,18,y+24);
-
-  y=86;
-
-  // ── TABLA 1: VOLUMEN POR DIA ───────────────────────────────────────────────
-  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('VOLUMEN PROCESADO POR DIA',12,y);
-  doc.setLineWidth(0.5);
-  doc.setDrawColor(C.accent[0],C.accent[1],C.accent[2]);
-  doc.line(12,y+2,W-12,y+2);
-  y+=5;
-
-  // Agrupar txs por fecha
-  var txsPDV=transactions.filter(function(t){return t.terminal===p.terminal&&t.estado==='aprobada';});
   var byDate={};
-  txsPDV.forEach(function(t){
-    var d=t.fecha||'';
+  txsList.forEach(function(t){
+    var d=normF(t.fecha);
     if(!byDate[d]) byDate[d]={deb:0,cred:0,qr:0};
     if(t.tipo==='debito') byDate[d].deb+=t.monto;
     else if(t.tipo==='credito') byDate[d].cred+=t.monto;
     else byDate[d].qr+=t.monto;
   });
 
-  var fechas=Object.keys(byDate).sort();
-  var totDeb=0,totCred=0,totQr=0;
-  var vol1rows=fechas.map(function(f){
-    var r=byDate[f];
-    totDeb+=r.deb;totCred+=r.cred;totQr+=r.qr;
-    var tot=r.deb+r.cred+r.qr;
-    // Formato fecha corto: "03/feb"
-    var parts=f.split('/');
-    var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    var lbl=parts.length>=2?(parts[0]+'/'+meses[parseInt(parts[1])-1]):f;
-    return[lbl,
-      r.deb>0?fmt(r.deb):'',
-      r.cred>0?fmt(r.cred):'',
-      r.qr>0?fmt(r.qr):'',
-      tot>0?fmt(tot):''];
-  });
-  vol1rows.push(['TOTAL',fmt(totDeb),fmt(totCred),fmt(totQr),fmt(totDeb+totCred+totQr)]);
+  // Generar días del período
+  function parseDate(str){
+    var pts=(str||'').split('/');
+    if(pts.length<3) return null;
+    return new Date(parseInt(pts[2]),parseInt(pts[1])-1,parseInt(pts[0]));
+  }
+  function fmtKey(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+  function fmtLabel(d){return String(d.getDate()).padStart(2,'0')+'/'+MESES[d.getMonth()];}
 
-  // Si no hay txs por fecha, usar resumen general
-  if(!fechas.length){
-    vol1rows=[
-      ['Credito','',fmt(v.cred),'',fmt(v.cred)],
-      ['Debito',fmt(v.deb),'','',fmt(v.deb)],
-      ['QR','','',fmt(v.qr),fmt(v.qr)],
-      ['TOTAL',fmt(v.deb),fmt(v.cred),fmt(v.qr),fmt(v.deb+v.cred+v.qr)],
-    ];
+  var startD=parseDate(from),endD=parseDate(to),days=[];
+  if(startD&&endD){
+    var cur=new Date(startD);
+    while(cur<=endD){days.push({key:fmtKey(cur),label:fmtLabel(cur)});cur.setDate(cur.getDate()+1);}
+  } else {
+    Object.keys(byDate).sort().forEach(function(k){days.push({key:k,label:k.slice(0,5)});});
   }
 
-  doc.autoTable({
-    startY:y, margin:{left:12,right:12},
-    head:[['Fecha','Debito','Credito','QR','Total']],
-    body:vol1rows,
-    headStyles:{fillColor:C.dark,textColor:C.white,fontSize:8,fontStyle:'bold',halign:'center'},
-    bodyStyles:{fontSize:8.5,textColor:C.txt,cellPadding:3,halign:'right'},
-    columnStyles:{0:{halign:'left',cellWidth:28}},
+  // Totales
+  var totDeb=0,totCred=0,totQr=0;
+  var vol1rows=days.map(function(day){
+    var r=byDate[day.key]||{deb:0,cred:0,qr:0};
+    totDeb+=r.deb;totCred+=r.cred;totQr+=r.qr;
+    var tot=r.deb+r.cred+r.qr;
+    return[day.label,fv(r.deb),fv(r.cred),fv(r.qr),tot>0?fv(tot):'$ -'];
+  });
+  var totTotal=totDeb+totCred+totQr;
+  vol1rows.push(['TOTAL',fv(totDeb),fv(totCred),fv(totQr),fv(totTotal)]);
+
+  // Tabla 1: Volumen
+  var tableOpts={
+    margin:{left:12,right:12},
+    tableWidth:186,
+    headStyles:{fillColor:C.dark,textColor:C.white,fontSize:7,fontStyle:'bold',halign:'center'},
+    bodyStyles:{fontSize:8,textColor:C.txt,cellPadding:2.5,halign:'right'},
+    columnStyles:{0:{halign:'left',cellWidth:24},1:{cellWidth:40},2:{cellWidth:40},3:{cellWidth:40},4:{cellWidth:42}},
     alternateRowStyles:{fillColor:C.gray},
     tableLineColor:C.line,tableLineWidth:0.2,
+  };
+
+  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text('VOLUMEN PROCESADO POR DIA',12,y);
+  doc.setLineWidth(0.4);doc.setDrawColor(C.accent[0],C.accent[1],C.accent[2]);
+  doc.line(12,y+1.5,W-12,y+1.5);y+=3;
+  doc.autoTable(Object.assign({},tableOpts,{
+    startY:y,
+    head:[['Fecha','Debito','Credito','QR','Total']],
+    body:vol1rows,
     didParseCell:function(data){
       if(data.row.index===vol1rows.length-1){
         data.cell.styles.fontStyle='bold';
         data.cell.styles.fillColor=C.light;
+        data.cell.styles.textColor=C.dark;
       }
     }
+  }));
+  y=doc.lastAutoTable.finalY+6;
+
+  // Tabla 2: Comisiones que cobramos
+  var comDiasRows=days.map(function(day){
+    var r=byDate[day.key]||{deb:0,cred:0,qr:0};
+    var cD=r.deb*(p.comDeb||0)/100;
+    var cC=r.cred*(p.comCred||0)/100;
+    var cQ=r.qr*(p.comQr||0)/100;
+    var tot=cD+cC+cQ;
+    return[day.label,fv(cD),fv(cC),fv(cQ),tot>0?fv(tot):'$ -'];
   });
+  var comTotDeb=totDeb*(p.comDeb||0)/100;
+  var comTotCred=totCred*(p.comCred||0)/100;
+  var comTotQr=totQr*(p.comQr||0)/100;
+  var comTotal=comTotDeb+comTotCred+comTotQr;
+  comDiasRows.push(['TOTAL',fv(comTotDeb),fv(comTotCred),fv(comTotQr),fv(comTotal)]);
 
-  y=doc.lastAutoTable.finalY+8;
-
-  // ── TABLA 2: COMISIONES POR DIA ────────────────────────────────────────────
-  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('COMISIONES A DESCONTAR',12,y);
-  doc.setLineWidth(0.5);
-  doc.line(12,y+2,W-12,y+2);
-  y+=5;
-
-  var comDiasRows=fechas.map(function(f){
-    var r=byDate[f];
-    var cDeb=r.deb*p.comDeb/100;
-    var cCred=r.cred*p.comCred/100;
-    var cQr=r.qr*p.comQr/100;
-    var parts=f.split('/');
-    var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    var lbl=parts.length>=2?(parts[0]+'/'+meses[parseInt(parts[1])-1]):f;
-    var tot=cDeb+cCred+cQr;
-    return[lbl,
-      cDeb>0?fmt(cDeb):'',
-      cCred>0?fmt(cCred):'',
-      cQr>0?fmt(cQr):'',
-      tot>0?fmt(tot):''];
-  });
-  var comDeb=v.deb*p.comDeb/100;
-  var comCred=v.cred*p.comCred/100;
-  var comQr=v.qr*p.comQr/100;
-  comDiasRows.push(['TOTAL',fmt(comDeb),fmt(comCred),fmt(comQr),fmt(com)]);
-
-  if(!fechas.length){
-    comDiasRows=[
-      ['Credito','',fmt(comCred),'',fmt(comCred)],
-      ['Debito',fmt(comDeb),'','',fmt(comDeb)],
-      ['QR','','',fmt(comQr),fmt(comQr)],
-      ['TOTAL',fmt(comDeb),fmt(comCred),fmt(comQr),fmt(com)],
-    ];
-  }
-
-  doc.autoTable({
-    startY:y, margin:{left:12,right:12},
+  doc.setTextColor(C.dark[0],C.dark[1],C.dark[2]);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text('DESCUENTOS POR DIA (COSTO DE SERVICIO)',12,y);
+  doc.line(12,y+1.5,W-12,y+1.5);y+=3;
+  doc.autoTable(Object.assign({},tableOpts,{
+    startY:y,
     head:[['Fecha','Debito','Credito','QR','Total']],
     body:comDiasRows,
-    headStyles:{fillColor:C.dark,textColor:C.white,fontSize:8,fontStyle:'bold',halign:'center'},
-    bodyStyles:{fontSize:8.5,textColor:C.txt,cellPadding:3,halign:'right'},
-    columnStyles:{0:{halign:'left',cellWidth:28}},
-    alternateRowStyles:{fillColor:C.gray},
-    tableLineColor:C.line,tableLineWidth:0.2,
     didParseCell:function(data){
       if(data.row.index===comDiasRows.length-1){
         data.cell.styles.fontStyle='bold';
         data.cell.styles.fillColor=C.light;
+        data.cell.styles.textColor=C.dark;
       }
     }
-  });
+  }));
+  y=doc.lastAutoTable.finalY+8;
 
-  y=doc.lastAutoTable.finalY+10;
-
-  // ── RESUMEN FINAL ──────────────────────────────────────────────────────────
-  var volTotal=v.deb+v.cred+v.qr;
-  var totalEntrega=volTotal-com;
-
-  var resumenRows=[
-    ['Total presentado', fmt(volTotal)],
-    ['Total descuento (comisiones)', '-'+fmt(com)],
-    ['TOTAL A ENTREGAR', fmt(totalEntrega)],
-  ];
-
+  // Resumen final
+  var entrega=totTotal-comTotal;
   doc.autoTable({
-    startY:y, margin:{left:80,right:12},
-    body:resumenRows,
-    bodyStyles:{fontSize:10,textColor:C.txt,cellPadding:4},
-    columnStyles:{
-      0:{halign:'left',fontStyle:'normal',cellWidth:70},
-      1:{halign:'right',cellWidth:35},
-    },
+    startY:y,margin:{left:100,right:12},
+    body:[['Total presentado',fv(totTotal)],['Total descuento','-'+fv(comTotal)],['TOTAL A ENTREGAR',fv(entrega)]],
+    bodyStyles:{fontSize:9,textColor:C.txt,cellPadding:3},
+    columnStyles:{0:{halign:'left',cellWidth:60},1:{halign:'right',cellWidth:35}},
     tableLineColor:C.line,tableLineWidth:0.3,
     didParseCell:function(data){
-      if(data.row.index===resumenRows.length-1){
-        data.cell.styles.fontStyle='bold';
-        data.cell.styles.fontSize=12;
-        data.cell.styles.fillColor=C.dark;
-        data.cell.styles.textColor=C.white;
-      }
-      if(data.row.index===1){
-        data.cell.styles.textColor=[180,40,40];
-      }
+      if(data.row.index===2){data.cell.styles.fontStyle='bold';data.cell.styles.fontSize=11;data.cell.styles.fillColor=C.dark;data.cell.styles.textColor=C.white;}
+      if(data.row.index===1){data.cell.styles.textColor=C.red;}
     }
   });
 
-  // ── PIE ────────────────────────────────────────────────────────────────────
-  doc.setFillColor(C.dark[0],C.dark[1],C.dark[2]);
-  doc.rect(0,pH-14,W,14,'F');
-  doc.setTextColor(C.accent[0],C.accent[1],C.accent[2]);
-  doc.setFontSize(7.5);doc.setFont('helvetica','normal');
-  doc.text('PayNorth — Soluciones de pago  |  Liquidacion Semanal  |  '+from+' al '+to,W/2,pH-7,{align:'center'});
-  doc.text('Emitida el '+emision,W/2,pH-3,{align:'center'});
-
-  doc.save('PayNorth_Liq_'+p.nombre.replace(/\s+/g,'_')+'_'+from.replace(/\//g,'-')+'.pdf');
+  // Pie
+  doc.setFillColor(C.dark[0],C.dark[1],C.dark[2]);doc.rect(0,pH-12,W,12,'F');
+  doc.setTextColor(C.accent[0],C.accent[1],C.accent[2]);doc.setFontSize(7);doc.setFont('helvetica','normal');
+  doc.text('PayNorth — Soluciones de pago  |  Liquidacion Semanal  |  '+from+' al '+to+'  |  Emitida el '+emision,W/2,pH-5,{align:'center'});
+  doc.save('PayNorth_'+(p.nombre||'terminal').replace(/\s+/g,'_')+'_'+from.replace(/\//g,'-')+'.pdf');
   toast('PDF generado: '+p.nombre);
 }
 
@@ -2161,61 +2594,195 @@ function renderHistorial(){
 function renderGuardar(){
   var hasTx=transactions.length>0;
   var wr=weekRange();
-  var apr=hasTx?transactions.filter(function(t){return t.estado==='aprobada';}):[];
-  var vol=apr.reduce(function(s,t){return s+t.monto;},0);
-  var com=apr.reduce(function(s,t){
+
+  // Detectar rango real de las transacciones cargadas
+  var txFrom=null, txTo=null;
+  if(hasTx){
+    transactions.forEach(function(t){
+      if(!t.fecha) return;
+      var parts=t.fecha.split('/');
+      if(parts.length<3) return;
+      var d=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+      if(!txFrom||d<txFrom) txFrom=d;
+      if(!txTo||d>txTo) txTo=d;
+    });
+  }
+  function fmtDate(d){
+    if(!d) return '';
+    return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  }
+
+  // Lunes de txFrom
+  function getMondayOf(d){
+    var day=d.getDay()||7;
+    var mon=new Date(d);
+    mon.setDate(d.getDate()-day+1);
+    return mon;
+  }
+  function getSundayOf(mon){
+    var sun=new Date(mon);
+    sun.setDate(mon.getDate()+6);
+    return sun;
+  }
+
+  var autoFrom=txFrom?fmtDate(getMondayOf(txFrom)):wr.from;
+  var autoTo=txFrom?fmtDate(getSundayOf(getMondayOf(txFrom))):wr.to;
+  var autoKey=weekKey(autoFrom);
+
+  // Verificar si ya existe esa semana en historial
+  var semanaExistente=autoKey&&historial[autoKey]?historial[autoKey]:null;
+  var semanas=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+
+  var html='<div class="ph"><h2>Guardar Semana</h2><p>Acumulá los CSV de la semana — podés cargar por día o de a varios</p></div>';
+
+  // Banner de semana detectada
+  if(hasTx&&txFrom){
+    var apr=transactions.filter(function(t){return t.estado==='aprobada';});
+    var vol=apr.reduce(function(s,t){return s+t.monto;},0);
+    var txDates={};
+    transactions.forEach(function(t){if(t.fecha) txDates[t.fecha]=true;});
+    var fechasUnicas=Object.keys(txDates).sort();
+
+    html+='<div style="background:'+(semanaExistente?'var(--abg)':'var(--gl)')+';border:1.5px solid '+(semanaExistente?'#f0c879':'var(--b)')+';border-radius:14px;padding:20px;margin-bottom:18px">';
+    html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">';
+    html+='<div>';
+    if(semanaExistente){
+      html+='<div style="font-size:13px;font-weight:700;color:var(--amb);margin-bottom:4px">⚠️ Esta semana ya tiene datos guardados</div>';
+      html+='<div style="font-size:14px;font-weight:600;color:var(--t)">'+semanaExistente.label+' — '+semanaExistente.from+' al '+semanaExistente.to+'</div>';
+      html+='<div style="font-size:12px;color:var(--t3);margin-top:4px">Ya guardadas: <strong>'+semanaExistente.txCount+' operaciones</strong> · Vol: <strong>'+fmt(semanaExistente.vol)+'</strong></div>';
+      html+='<div style="font-size:12px;color:var(--t2);margin-top:6px">📅 Días en el CSV actual: <strong>'+fechasUnicas.join(', ')+'</strong></div>';
+    } else {
+      html+='<div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:4px">✅ Semana detectada automáticamente</div>';
+      html+='<div style="font-size:14px;font-weight:600;color:var(--t)">'+autoFrom+' al '+autoTo+'</div>';
+      html+='<div style="font-size:12px;color:var(--t2);margin-top:6px">📅 Días en el CSV: <strong>'+fechasUnicas.join(', ')+'</strong></div>';
+    }
+    html+='</div>';
+    html+='<div style="text-align:right">';
+    html+='<div style="font-size:11px;color:var(--t3);text-transform:uppercase;font-weight:700;margin-bottom:4px">En memoria ahora</div>';
+    html+='<div style="font-size:22px;font-weight:800;color:var(--g)">'+fmt(vol)+'</div>';
+    html+='<div style="font-size:11px;color:var(--t3)">'+apr.length+' aprobadas de '+transactions.length+' total</div>';
+    html+='</div></div>';
+
+    html+='<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">';
+    if(semanaExistente){
+      html+='<button class="btn-save" style="flex:1;padding:12px;font-size:14px" onclick="acumularEnSemanaExistente(\''+autoKey+'\')">➕ Agregar a semana existente ('+semanaExistente.txCount+' ops → +'+(transactions.length)+' más)</button>';
+      html+='<button class="bsm" onclick="var f=document.getElementById(\'guardar-manual-form\');f.style.display=f.style.display===\'none\'?\'block\':\'none\'" style="padding:12px 18px">📝 Guardar como semana nueva</button>';
+    } else {
+      html+='<button class="btn-save" style="flex:1;padding:12px;font-size:14px" onclick="guardarSemanaAuto()">💾 Guardar semana '+autoFrom+' al '+autoTo+'</button>';
+      html+='<button class="bsm" onclick="var f=document.getElementById(\'guardar-manual-form\');f.style.display=f.style.display===\'none\'?\'block\':\'none\'" style="padding:12px 18px">📝 Elegir fechas manualmente</button>';
+    }
+    html+='</div>';
+    html+='</div>';
+  } else if(!hasTx){
+    html+='<div class="info-banner" style="background:var(--abg);border-color:#f0c879;margin-bottom:18px"><span class="ii" style="color:var(--amb)">⚠️</span><div style="color:var(--amb)"><strong>No hay transacciones cargadas.</strong> Importá el CSV de Payway primero y después guardá.</div></div>';
+  }
+
+  // Form manual (oculto por defecto)
+  html+='<div id="guardar-manual-form" style="display:none;background:#fff;border:1.5px solid var(--b);border-radius:14px;padding:20px;margin-bottom:18px">';
+  html+='<div class="ctitle" style="margin-bottom:14px">📝 Guardar con fechas personalizadas</div>';
+  html+='<div class="mrow3" style="margin-bottom:14px">';
+  html+='<div class="fgm"><label>Desde</label><input id="gsf" value="'+autoFrom+'"/></div>';
+  html+='<div class="fgm"><label>Hasta</label><input id="gst" value="'+autoTo+'"/></div>';
+  html+='<div class="fgm"><label>Etiqueta (opcional)</label><input id="gslbl" placeholder="Ej: Semana 1 Enero"/></div>';
+  html+='</div>';
+  html+=(hasTx
+    ?'<button class="btn-save" style="width:100%;padding:12px" onclick="guardarSemanaDesdeForm()">💾 Guardar</button>'
+    :'<button class="btn-save" style="width:100%;padding:12px" onclick="guardarSemanaManual()">💾 Guardar registro manual</button>'
+  );
+  html+='</div>';
+
+  // Semanas guardadas
+  html+='<div class="card">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+  html+='<div class="ctitle" style="margin-bottom:0">📅 Semanas guardadas ('+semanas.length+')</div>';
+  html+='<button class="bsm" onclick="navigate(\'historial\')">Ver historial completo →</button>';
+  html+='</div>';
+
+  if(!semanas.length){
+    html+='<div style="text-align:center;padding:28px;color:var(--t3);font-size:13px">Aún no hay semanas guardadas</div>';
+  } else {
+    html+='<div class="tw"><table><thead><tr><th>Semana</th><th>Período</th><th>Operaciones</th><th>Vol.</th><th>Comisión</th><th>Acciones</th></tr></thead><tbody>';
+    semanas.slice(0,8).forEach(function(h){
+      var esActual=autoKey&&h.key===autoKey;
+      html+='<tr style="'+(esActual?'background:#fffbeb':'')+'">';
+      html+='<td><strong>'+h.label+'</strong>'+(esActual?' <span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;font-weight:600">SEMANA ACTUAL</span>':'')+'</td>';
+      html+='<td style="font-size:12px;color:var(--t3)">'+h.from+' al '+h.to+'</td>';
+      html+='<td style="text-align:center"><strong>'+h.txCount+'</strong></td>';
+      html+='<td>'+fmt(h.vol)+'</td>';
+      html+='<td style="color:var(--gd);font-weight:500">'+fmt(h.com)+'</td>';
+      html+='<td><button class="bsm pdf" onclick="cargarSemanaEnMemoria(\''+h.key+'\')">+ Agregar más</button></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+  }
+  html+='</div>';
+
+  return html;
+}
+
+function guardarSemanaAuto(){
+  // Detectar from/to automáticamente desde las transacciones
+  var txFrom=null, txTo=null;
+  transactions.forEach(function(t){
+    if(!t.fecha) return;
+    var parts=t.fecha.split('/');
+    if(parts.length<3) return;
+    var d=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+    if(!txFrom||d<txFrom) txFrom=d;
+    if(!txTo||d>txTo) txTo=d;
+  });
+  if(!txFrom){toast('No se pudo detectar la fecha de las transacciones');return;}
+  function getMondayOf(d){var day=d.getDay()||7;var mon=new Date(d);mon.setDate(d.getDate()-day+1);return mon;}
+  function getSundayOf(mon){var sun=new Date(mon);sun.setDate(mon.getDate()+6);return sun;}
+  function fmtDate(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+  var from=fmtDate(getMondayOf(txFrom));
+  var to=fmtDate(getSundayOf(getMondayOf(txFrom)));
+  guardarSemanaEnHistorial(from,to,transactions);
+  saveHistorial();
+  navigate('guardar');
+}
+
+function acumularEnSemanaExistente(key){
+  var h=historial[key];
+  if(!h){toast('Semana no encontrada');return;}
+  // Dedup por nroCupon o por combinación fecha+terminal+monto
+  var existingIds={};
+  h.txs.forEach(function(t){
+    var id=t.nroCupon||(t.fecha+'_'+t.terminal+'_'+t.monto+'_'+t.tipo);
+    existingIds[id]=true;
+  });
+  var nuevas=transactions.filter(function(t){
+    var id=t.nroCupon||(t.fecha+'_'+t.terminal+'_'+t.monto+'_'+t.tipo);
+    return !existingIds[id];
+  });
+  if(!nuevas.length){toast('No hay operaciones nuevas — todas ya estaban guardadas');return;}
+  h.txs=h.txs.concat(nuevas);
+  // Recalcular todo
+  var allApr=h.txs.filter(function(t){return t.estado==='aprobada';});
+  h.vol=allApr.reduce(function(s,t){return s+t.monto;},0);
+  h.com=allApr.reduce(function(s,t){
     var pdv=pdvs.find(function(p){return p.terminal===t.terminal;});
     if(!pdv) return s;
-    var r=t.tipo==='credito'?pdv.comCred:t.tipo==='debito'?pdv.comDeb:pdv.comQr;
-    return s+(t.monto*(r||0)/100);
+    return s+(t.monto*(t.tipo==='credito'?pdv.comCred:t.tipo==='debito'?pdv.comDeb:pdv.comQr)/100);
   },0);
-  var costo=apr.reduce(function(s,t){
-    var r=t.tipo==='credito'?costoPN.cred:t.tipo==='debito'?costoPN.deb:costoPN.qr;
-    return s+(t.monto*(r||0)/100);
+  h.costo=allApr.reduce(function(s,t){
+    return s+(t.monto*(t.tipo==='credito'?costoPN.cred:t.tipo==='debito'?costoPN.deb:costoPN.qr)/100);
   },0);
-  var semanas=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);}).slice(0,5);
-  var html='<div class="ph"><h2>Guardar Semana</h2><p>Guardá los datos de cada semana para armar el historial</p></div>';
-  html+='<div class="card" style="margin-bottom:16px"><div class="ctitle">📊 Datos en memoria</div>';
-  if(hasTx){
-    html+='<div class="sg" style="margin-bottom:16px">'
-      +'<div class="sc"><div class="slbl">Transacciones</div><div class="sval">'+transactions.length+'</div><div class="ssub">'+apr.length+' aprobadas</div></div>'
-      +'<div class="sc"><div class="slbl">Vol. aprobado</div><div class="sval" style="font-size:18px">'+fmt(vol)+'</div></div>'
-      +'<div class="sc"><div class="slbl">Comisión</div><div class="sval" style="font-size:18px;color:var(--gd)">'+fmt(com)+'</div></div>'
-      +'<div class="sc"><div class="slbl">Neto est.</div><div class="sval" style="font-size:18px;color:var(--g)">'+fmt(com-costo)+'</div></div>'
-      +'</div>';
-  } else {
-    html+='<div class="info-banner" style="background:var(--abg);border-color:#f0c879;margin-bottom:16px"><span class="ii" style="color:var(--amb)">⚠️</span><div style="color:var(--amb)">No hay transacciones cargadas. Importá el CSV primero.</div></div>';
-  }
-  html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:20px">'
-    +'<div class="mrow3" style="margin-bottom:14px">'
-    +'<div class="fgm"><label>Desde</label><input id="gsf" value="'+wr.from+'"/></div>'
-    +'<div class="fgm"><label>Hasta</label><input id="gst" value="'+wr.to+'"/></div>'
-    +'<div class="fgm"><label>Etiqueta (opcional)</label><input id="gslbl" placeholder="Ej: Semana 1 Enero"/></div>'
-    +'</div>'
-    +(hasTx
-      ?'<button class="btn-save" style="width:100%;padding:14px;font-size:15px" onclick="guardarSemanaDesdeForm()">💾 Guardar esta semana</button>'
-      :'<button class="btn-save" style="width:100%;padding:14px;font-size:15px" onclick="guardarSemanaManual()">💾 Guardar manualmente</button>'
-    )
-    +'</div></div>';
-  html+='<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
-    +'<div class="ctitle" style="margin-bottom:0">📅 Últimas semanas</div>'
-    +'<button class="bsm" onclick="navigate(\'historial\')">Ver historial →</button>'
-    +'</div>'
-    +(semanas.length===0
-      ?'<div style="text-align:center;padding:28px;color:var(--t3);font-size:13px">Aún no hay semanas guardadas</div>'
-      :'<div class="tw"><table><thead><tr><th>Semana</th><th>Período</th><th>Transacciones</th><th>Vol.</th><th>Comisión</th><th>Neto</th></tr></thead><tbody>'
-        +semanas.map(function(h){
-          return'<tr><td><strong>'+h.label+'</strong></td>'
-            +'<td style="font-size:12px;color:var(--t3)">'+h.from+' al '+h.to+'</td>'
-            +'<td style="text-align:center">'+h.txCount+'</td>'
-            +'<td>'+fmt(h.vol)+'</td>'
-            +'<td style="color:var(--gd);font-weight:500">'+fmt(h.com)+'</td>'
-            +'<td style="font-weight:600">'+fmt(h.com-h.costo)+'</td></tr>';
-        }).join('')
-        +'</tbody></table></div>'
-    )
-    +'</div>';
-  return html;
+  h.txCount=h.txs.length;
+  h.savedAt=new Date().toISOString();
+  saveHistorial();
+  dbSaveHistorialWeek(h);
+  toast('✅ '+nuevas.length+' operaciones agregadas — semana tiene ahora '+h.txCount+' operaciones');
+  navigate('guardar');
+}
+
+function cargarSemanaEnMemoria(key){
+  var h=historial[key];
+  if(!h||!h.txs){toast('No hay operaciones en esta semana');return;}
+  if(!confirm('Cargar '+h.txCount+' operaciones de "'+h.label+'" en memoria?\nPodés agregar más CSV y después volver a guardar.')){return;}
+  transactions=JSON.parse(JSON.stringify(h.txs));
+  toast('✅ '+transactions.length+' operaciones cargadas. Importá el CSV adicional y guardá.');
+  navigate('importar');
 }
 
 function guardarSemanaDesdeForm(){
@@ -2352,8 +2919,9 @@ function renderBalance(){
   var usandoHistorial=false;
 
   if(balancePeriodo==='actual'){
-    txsFuente=transactions;
-    fuenteLabel=transactions.length?'Semana actual — '+transactions.length+' transacciones':'Sin datos cargados';
+    var semsB=semanas;
+    txsFuente=(semsB[0]&&semsB[0].txs)?semsB[0].txs:[];
+    fuenteLabel=semsB[0]?semsB[0].label+' — '+txsFuente.length+' transacciones':'Sin semanas guardadas';
   } else if(balancePeriodo.indexOf('mes:')===0){
     var mk=balancePeriodo.slice(4);
     semanas.filter(function(h){
@@ -2440,7 +3008,7 @@ function renderBalance(){
   html+='<div class="bcard bc1"><div class="bclbl">💳 Cobrado</div><div class="bcval">'+fmt(totalCobrado)+'</div><div class="bcsub">Comisiones sobre '+fmt(totCred+totDeb+totQr)+'</div></div>';
   html+='<div class="bcard bc2"><div class="bclbl">💸 Costo propio</div><div class="bcval">'+fmt(totalCosto)+'</div><div class="bcsub">Lo que paga PAYNORTH</div></div>';
   html+='<div class="bcard bc3"><div class="bclbl">✅ Neto</div><div class="bcval">'+fmt(totalNeto)+'</div><div class="bcsub">Margen: '+margen+'%</div></div>';
-  html+='<div class="bcard" style="background:var(--abg);border:1px solid #f0c879"><div class="bclbl" style="color:var(--amb)">🤝 Propinas</div><div class="bcval" style="color:var(--amb)">'+fmt(totPropinas)+'</div><div class="bcsub" style="color:var(--amb)">'+(cobPropinas>0?'Com: '+fmt(cobPropinas):'Tuyas sin comisión')+'</div></div>';
+  html+='<div class="bcard" style="background:var(--abg);border:1px solid #f0c879;min-height:110px"><div class="bclbl" style="color:#b45309;opacity:.85;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">🤝 Propinas</div><div class="bcval" style="color:#92400e;font-size:30px;font-weight:800;letter-spacing:-.5px">'+fmt(totPropinas)+'</div><div class="bcsub" style="color:#b45309;opacity:.6;margin-top:8px;font-size:12px">&nbsp;</div></div>';
   html+='</div>';
 
   html+='<div class="bgrid2">';
@@ -2450,7 +3018,8 @@ function renderBalance(){
     +'<div class="brow"><span class="brlbl">🏧 Débito</span><span class="brval">'+fmt(cobD)+'</span></div>'
     +'<div class="brow" style="padding-left:16px"><span class="brlbl" style="font-size:12px;color:var(--t3)">Vol. débito</span><span class="brval" style="font-size:12px;color:var(--t3)">'+fmt(totDeb)+'</span></div>'
     +'<div class="brow"><span class="brlbl">📱 QR</span><span class="brval">'+fmt(cobQ)+'</span></div>'
-    +'<div class="brow" style="border-top:2px solid var(--g);margin-top:4px"><span style="font-weight:600">Total</span><span class="brval" style="color:var(--gd);font-weight:600">'+fmt(totalCobrado)+'</span></div>'
+    +'<div class="brow" style="padding-left:16px;margin-bottom:8px"><span class="brlbl" style="font-size:12px;color:var(--t3)">Vol. QR</span><span class="brval" style="font-size:12px;color:var(--t3)">'+fmt(totQr)+'</span></div>'
+    +'<div class="brow" style="border-top:2px solid var(--g);margin-top:8px;padding-top:4px"><span style="font-weight:600">Total</span><span class="brval" style="color:var(--gd);font-weight:600">'+fmt(totalCobrado)+'</span></div>'
     +'</div>';
   html+='<div class="card"><div class="ctitle">Costo propio (con impuestos bancarios)</div>'
     +'<div class="brow"><span class="brlbl">💳 Créd. Visa/Master/Naranja/Cabal/Prepaga ('+pct(costoPN.credResto)+' + 3% perc.)</span><span class="brval" style="color:var(--red)">'+fmt(cC*0.95)+'</span></div>'
@@ -2850,6 +3419,7 @@ function comFilter(f){
 
 // ── GESTIÓN DE GRUPOS ─────────────────────────────────────────────────────────
 function openGrupos(){
+  window._editandoGrupoIdx=null; // Siempre empieza en modo crear
   renderGruposModal();
   document.getElementById('modal-grupos').classList.add('open');
 }
@@ -2857,52 +3427,75 @@ function openGrupos(){
 var _grupoColorSeleccionado='#1a7a4a';
 var COLORS=['#1a7a4a','#2563eb','#7c3aed','#dc2626','#d97706','#0891b2','#be185d','#065f46','#92400e','#1e40af'];
 
-function renderGruposModal(){
-  var html='';
-  if(grupos.length>0){
-    html+='<div style="margin-bottom:20px">';
-    grupos.forEach(function(g,gi){
-      var count=g.terminales.filter(function(t){return pdvs.find(function(p){return p.terminal===t;});}).length;
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--b)">'
-        +'<div style="width:16px;height:16px;border-radius:50%;background:'+g.color+';flex-shrink:0"></div>'
-        +'<strong style="flex:1">'+g.nombre+'</strong>'
-        +'<span style="font-size:12px;color:var(--t3)">'+count+' terminal'+(count!==1?'es':'')+'</span>'
-        +'<button class="bsm" onclick="editGrupo('+gi+')">Editar</button>'
-        +'<button class="bsm danger" onclick="eliminarGrupoIdx('+gi+')">✕</button>'
-        +'</div>';
-    });
-    html+='</div>';
-  } else {
-    html+='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px">No hay grupos creados. Creá uno abajo.</div>';
-  }
+function buildTermList(containerId, checkedTerminales){
+  // Build terminal list with search - reusable for crear y editar
+  var q=(document.getElementById('g-term-search')||{value:''}).value.toLowerCase().trim();
+  var filtered=pdvs.filter(function(p){
+    if(!q) return true;
+    return (p.nombre||'').toLowerCase().indexOf(q)>=0 || p.terminal.indexOf(q)>=0;
+  });
+  var container=document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML=filtered.map(function(p){
+    var g=getGrupoDeTerminal(p.terminal);
+    var checked=checkedTerminales.indexOf(p.terminal)>=0;
+    return'<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:6px">'
+      +'<input type="checkbox" class="g-term-check" value="'+p.terminal+'" '+(checked?'checked':'')+' style="cursor:pointer;width:16px;height:16px;flex-shrink:0"/>'
+      +'<span style="font-size:14px;font-weight:500;flex:1">'+(p.nombre&&p.nombre!=='Prueba'?p.nombre:'Sin nombre')+'</span>'
+      +'<span style="font-size:11px;color:var(--t3);font-family:monospace">'+p.terminal+'</span>'
+      +(g&&checkedTerminales.indexOf(p.terminal)<0?'<span style="background:'+g.color+'22;color:'+g.color+';font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600">'+g.nombre+'</span>':'')
+      +'</label>';
+  }).join('') || '<div style="text-align:center;padding:12px;color:var(--t3);font-size:13px">Sin resultados</div>';
+}
 
-  html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:16px">'
-    +'<div style="font-size:13px;font-weight:600;color:var(--gd);margin-bottom:12px">+ Crear nuevo grupo</div>'
-    +'<div class="mrow" style="margin-bottom:12px">'
-    +'<div class="fgm"><label>Nombre del grupo</label><input id="g-nombre" placeholder="Ej: Socio Juan, Zona Norte..."/></div>'
-    +'<div class="fgm"><label>Color</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'
+function renderGruposModal(){
+  var editandoGi=window._editandoGrupoIdx;
+  var editando=editandoGi!==undefined&&editandoGi!==null?grupos[editandoGi]:null;
+  var html='';
+
+  // Solo mostrar lista si está editando, sino solo el form de crear
+
+  // Form crear o editar
+  var isEdit=!!editando;
+  var checkedTerminales=isEdit?editando.terminales:[];
+  var nombreVal=isEdit?editando.nombre:'';
+  var colorVal=isEdit?editando.color:COLORS[0];
+
+  html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:16px" id="grupo-form">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+  html+='<div style="font-size:13px;font-weight:600;color:var(--gd)">'+(isEdit?'✏️ Editando: '+editando.nombre:'+ Crear nuevo grupo')+'</div>';
+  if(isEdit) html+='<button class="bsm" onclick="window._editandoGrupoIdx=null;renderGruposModal()">Cancelar</button>';
+  html+='</div>';
+
+  html+='<div class="mrow" style="margin-bottom:12px">'
+    +'<div class="fgm"><label>Nombre del grupo</label><input id="g-nombre" value="'+nombreVal+'" placeholder="Ej: Socio Juan, Zona Norte..."/></div>'
+    +'<div class="fgm"><label>Color</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="g-color-picker">'
     +COLORS.map(function(c){
-      return'<div data-color="'+c+'" onclick="selectGrupoColor(this,this.getAttribute(&quot;data-color&quot;))" style="width:26px;height:26px;border-radius:50%;background:'+c+';cursor:pointer;border:2px solid transparent;transition:all .15s"></div>';
+      var sel=c===colorVal;
+      return'<div data-color="'+c+'" onclick="selectGrupoColor(this,this.getAttribute(&quot;data-color&quot;))" style="width:26px;height:26px;border-radius:50%;background:'+c+';cursor:pointer;border:2px solid '+(sel?c:'transparent')+';box-shadow:'+(sel?'0 0 0 2px white, 0 0 0 4px '+c:'none')+';transition:all .15s"></div>';
     }).join('')
-    +'</div></div></div>'
-    +'<div class="fgm" style="margin-bottom:12px"><label>Terminales a asignar</label>'
-    +'<div style="max-height:200px;overflow-y:auto;border:1px solid var(--b);border-radius:var(--rs);padding:8px">'
-    +pdvs.map(function(p){
-      var g=getGrupoDeTerminal(p.terminal);
-      return'<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:6px">'
-        +'<input type="checkbox" class="g-term-check" value="'+p.terminal+'" style="cursor:pointer;width:16px;height:16px;flex-shrink:0"/>'
-        +'<span style="font-size:14px;font-weight:500;flex:1">'+(p.nombre&&p.nombre!=='Prueba'?p.nombre:'Sin nombre')+'</span>'
-        +'<span style="font-size:11px;color:var(--t3);font-family:monospace">'+p.terminal+'</span>'
-        +(g?'<span style="background:'+g.color+'22;color:'+g.color+';font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600">'+g.nombre+'</span>':'')
-        +'</label>';
-    }).join('')
-    +'</div></div>'
-    +'<button class="btn-save" style="width:100%" onclick="crearGrupo()">Crear grupo</button>'
-    +'</div>';
+    +'</div></div></div>';
+
+  // Guardar checked en variable global para el oninput
+  window._grupoEditChecked=checkedTerminales;
+  // Buscador de terminales
+  html+='<div class="fgm" style="margin-bottom:8px"><label>Terminales '+(isEdit?'del grupo':'a asignar')+'</label>'
+    +'<input id="g-term-search" placeholder="🔍  Buscar por nombre o número..." oninput="buildTermList(&quot;g-term-list&quot;,window._grupoEditChecked)" '
+    +'style="width:100%;padding:9px 12px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:13px;margin-bottom:6px;box-sizing:border-box"/>'
+    +'<div id="g-term-list" style="max-height:220px;overflow-y:auto;border:1px solid var(--b);border-radius:var(--rs);padding:8px">'
+    +'</div></div>';
+
+  html+='<button class="btn-save" style="width:100%" onclick="'+(isEdit?'guardarEditGrupo('+editandoGi+')':'crearGrupo()')+'">'+
+    (isEdit?'💾 Guardar cambios':'Crear grupo')+'</button>';
+  html+='</div>';
 
   document.getElementById('grupos-content').innerHTML=html;
-  var firstColor=document.querySelector('[data-color]');
-  if(firstColor) selectGrupoColor(firstColor, COLORS[0]);
+
+  // Init color picker selection
+  _grupoColorSeleccionado=colorVal;
+
+  // Init terminal list
+  buildTermList('g-term-list', checkedTerminales);
 }
 
 function selectGrupoColor(el,color){
@@ -2935,16 +3528,31 @@ function crearGrupo(){
 }
 
 function editGrupo(gi){
+  window._editandoGrupoIdx=gi;
+  renderGruposModal();
+  document.getElementById('modal-grupos').classList.add('open');
+}
+
+function guardarEditGrupo(gi){
   var g=grupos[gi];
   if(!g) return;
-  var nuevo=prompt('Nuevo nombre para "'+g.nombre+'":', g.nombre);
-  if(nuevo&&nuevo.trim()){
-    g.nombre=nuevo.trim();
-    saveGrupos();
-    renderGruposModal();
-    navigate('puntos');
-    toast('Grupo renombrado');
-  }
+  var nombre=(document.getElementById('g-nombre').value||'').trim();
+  if(!nombre){toast('Poné un nombre');return;}
+  var checks=document.querySelectorAll('.g-term-check:checked');
+  var terminales=[];
+  checks.forEach(function(c){terminales.push(c.value);});
+  // Quitar esas terminales de otros grupos
+  grupos.forEach(function(og,i){
+    if(i!==gi) og.terminales=og.terminales.filter(function(t){return terminales.indexOf(t)<0;});
+  });
+  g.nombre=nombre;
+  g.color=_grupoColorSeleccionado;
+  g.terminales=terminales;
+  saveGrupos();
+  window._editandoGrupoIdx=null;
+  renderGruposModal();
+  navigate('puntos');
+  toast('Grupo "'+nombre+'" actualizado');
 }
 
 function eliminarGrupoIdx(gi){
@@ -3032,7 +3640,8 @@ function renderConciliacion(){
   // Obtener txs del período
   var txsFuente=[];
   if(conciliacionPeriodo==='actual'){
-    txsFuente=transactions;
+    var semsC=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+    txsFuente=(semsC[0]&&semsC[0].txs)?semsC[0].txs:[];
   } else if(conciliacionPeriodo.indexOf('mes:')===0){
     var mk=conciliacionPeriodo.slice(4);
     semanas.filter(function(h){
@@ -3089,7 +3698,7 @@ function renderConciliacion(){
     if(t.propina>0){r.propinas+=t.propina;r.comPropinas+=t.propina*(pdv&&pdv.comProp?pdv.comProp:0)/100;}
   });
 
-  var html='<div class="ph"><h2>💵 Liquidar</h2><p>Lo que tenés que entregar en efectivo a cada terminal</p></div>';
+  var html='<div class="ph"><h2>💵 Ventas</h2><p>Volumen de ventas y lo que tenés que entregar a cada terminal</p></div>';
 
   // Selector período
   // Terminal selector
@@ -3414,7 +4023,8 @@ function renderCaja(){
   var txsFuenteCaja=[];
   var semanasCaja=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
   if(conciliacionPeriodo==='actual'){
-    txsFuenteCaja=transactions;
+    var semsCaja2=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+    txsFuenteCaja=(semsCaja2[0]&&semsCaja2[0].txs)?semsCaja2[0].txs:[];
   } else if(conciliacionPeriodo.indexOf('mes:')===0){
     var mkCaja=conciliacionPeriodo.slice(4);
     semanasCaja.filter(function(h){
@@ -3626,6 +4236,781 @@ function renderCaja(){
     }
     html+='</div>';
   }
+
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// USUARIOS
+// ══════════════════════════════════════════════════════════════════════════════
+
+var _editUsrIdx=null;
+
+function generarPassword(){
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+  var pass='';
+  for(var i=0;i<10;i++) pass+=chars[Math.floor(Math.random()*chars.length)];
+  return pass;
+}
+
+function getPermisosDefault(rol){
+  var permisos={};
+  SECCIONES_PERMISOS.forEach(function(s){
+    if(rol==='admin'){
+      permisos[s.id]='editar';
+    } else if(s.roles.indexOf(rol)>=0){
+      permisos[s.id]='ver';
+    } else {
+      permisos[s.id]='nada';
+    }
+  });
+  return permisos;
+}
+
+function openModalUsuario(idx){
+  _editUsrIdx=idx===undefined?null:idx;
+  var u=idx!==undefined?appUsuarios[idx]:{};
+  document.getElementById('usr-modal-title').textContent=idx!==undefined?'Editar Usuario':'Nuevo Usuario';
+  document.getElementById('usr-nombre').value=u.nombre||'';
+  document.getElementById('usr-email').value=u.email||'';
+  document.getElementById('usr-password').value=u.password||generarPassword();
+  document.getElementById('usr-rol').value=u.rol||'pdv';
+  document.querySelectorAll('[name="usr-activo"]').forEach(function(r){
+    r.checked=(r.value==='1')===(u.activo!==false);
+  });
+  window._usrPermisosTmp=u.permisos?JSON.parse(JSON.stringify(u.permisos)):getPermisosDefault(u.rol||'pdv');
+  window._usrTerminalesTmp=u.terminales?u.terminales.slice():[];
+  updateUsrPermisos();
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function updateUsrPermisos(){
+  var rol=document.getElementById('usr-rol').value;
+  // Reset permisos to defaults for new role
+  if(!window._usrPermisosTmp||Object.keys(window._usrPermisosTmp).length===0){
+    window._usrPermisosTmp=getPermisosDefault(rol);
+  }
+
+  // Terminales section
+  var termSec=document.getElementById('usr-terminales-section');
+  var termLabel=document.getElementById('usr-term-label');
+  var termList=document.getElementById('usr-term-list');
+  if(rol==='admin'){
+    termSec.style.display='none';
+  } else {
+    termSec.style.display='';
+    termLabel.textContent=rol==='pdv'?'Terminales asignadas (el PDV solo ve estas)':'Terminales del socio (sus referidos)';
+    termList.innerHTML=pdvs.map(function(p){
+      var checked=window._usrTerminalesTmp.indexOf(p.terminal)>=0;
+      return'<label style="display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:4px">'
+        +'<input type="checkbox" class="usr-term-cb" value="'+p.terminal+'" '+(checked?'checked':'')+' style="width:16px;height:16px;cursor:pointer"/>'
+        +'<span style="font-size:13px;font-weight:500;flex:1">'+(p.nombre&&p.nombre!=='Prueba'?p.nombre:'Sin nombre')+'</span>'
+        +'<span style="font-size:11px;color:var(--t3);font-family:monospace">'+p.terminal+'</span>'
+        +'</label>';
+    }).join('');
+  }
+
+  // Permisos section
+  var permSec=document.getElementById('usr-permisos-section');
+  var permList=document.getElementById('usr-permisos-list');
+  if(rol==='admin'){
+    permSec.style.display='none';
+  } else {
+    permSec.style.display='';
+    permList.innerHTML=SECCIONES_PERMISOS.map(function(s,si){
+      var cur=window._usrPermisosTmp[s.id]||'nada';
+      var disponible=s.roles.indexOf(rol)>=0;
+      var bg=si%2===0?'var(--gp)':'#fff';
+      return'<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:'+bg+';border-bottom:1px solid var(--b)">'
+        +'<span style="flex:1;font-size:13px;font-weight:500'+(disponible?'':';color:var(--t3)')+'">'+s.label+'</span>'
+        +'<div style="display:flex;gap:4px">'
+        +['nada','ver','editar'].map(function(nivel){
+          var labels={nada:'Sin acceso',ver:'Ver',editar:'Editar'};
+          var colors={nada:'#fee2e2',ver:'#dbeafe',editar:'#dcfce7'};
+          var textColors={nada:'var(--red)',ver:'#1d4ed8',editar:'var(--gd)'};
+          var active=cur===nivel;
+          var disabled=nivel==='editar'&&!disponible;
+          return'<button onclick="window._usrPermisosTmp[\''+s.id+'\']=\''+nivel+'\';updateUsrPermisos()" '
+            +(disabled?'disabled title="No disponible para este rol"':'')
+            +' style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;font-family:inherit;cursor:'+(disabled?'not-allowed':'pointer')+';border:1.5px solid '+(active?textColors[nivel]:'var(--b)')+';background:'+(active?colors[nivel]:'#fff')+';color:'+(active?textColors[nivel]:'var(--t3)')+';">'
+            +labels[nivel]+'</button>';
+        }).join('')
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+}
+
+function saveUsuario(){
+  var nombre=document.getElementById('usr-nombre').value.trim();
+  var email=document.getElementById('usr-email').value.trim().toLowerCase();
+  var password=document.getElementById('usr-password').value.trim();
+  var rol=document.getElementById('usr-rol').value;
+  var activo=document.querySelector('[name="usr-activo"]:checked').value==='1';
+
+  if(!nombre){toast('El nombre es obligatorio');return;}
+  if(!email||email.indexOf('@')<0){toast('Email inválido');return;}
+  if(!password||password.length<6){toast('La contraseña debe tener al menos 6 caracteres');return;}
+
+  // Check duplicate email
+  var dupIdx=appUsuarios.findIndex(function(u,i){return u.email===email&&i!==_editUsrIdx;});
+  if(dupIdx>=0){toast('Ya existe un usuario con ese email');return;}
+
+  // Collect terminales
+  var terminales=[];
+  document.querySelectorAll('.usr-term-cb:checked').forEach(function(cb){terminales.push(cb.value);});
+
+  var usr={
+    id:_editUsrIdx!==null&&appUsuarios[_editUsrIdx]?appUsuarios[_editUsrIdx].id:('usr-'+Date.now()),
+    nombre:nombre,
+    email:email,
+    password:password,
+    rol:rol,
+    activo:activo,
+    terminales:terminales,
+    permisos:rol==='admin'?getPermisosDefault('admin'):(window._usrPermisosTmp||getPermisosDefault(rol)),
+    creadoEn:_editUsrIdx!==null&&appUsuarios[_editUsrIdx]?appUsuarios[_editUsrIdx].creadoEn:new Date().toISOString(),
+  };
+
+  if(_editUsrIdx!==null) appUsuarios[_editUsrIdx]=usr;
+  else appUsuarios.push(usr);
+
+  // Also update LOCAL_USERS so login works
+  LOCAL_USERS[email]=password;
+
+  saveUsuarios();
+  closeModal('modal-usuario');
+  navigate('usuarios');
+  toast(_editUsrIdx!==null?'Usuario actualizado':'Usuario creado — puede ingresar con '+email);
+}
+
+function toggleUsuarioActivo(idx){
+  appUsuarios[idx].activo=!appUsuarios[idx].activo;
+  saveUsuarios();
+  navigate('usuarios');
+  toast(appUsuarios[idx].activo?'Usuario activado':'Usuario desactivado');
+}
+
+function eliminarUsuario(idx){
+  if(!confirm('Eliminar usuario "'+appUsuarios[idx].nombre+'"?')) return;
+  var email=appUsuarios[idx].email;
+  delete LOCAL_USERS[email];
+  appUsuarios.splice(idx,1);
+  saveUsuarios();
+  navigate('usuarios');
+  toast('Usuario eliminado');
+}
+
+function copiarCredenciales(idx){
+  var u=appUsuarios[idx];
+  var txt='Acceso PAYNORTH\nEmail: '+u.email+'\nContraseña: '+u.password+'\nURL: https://paynorth.github.io/paynorth';
+  navigator.clipboard.writeText(txt).then(function(){
+    toast('✅ Credenciales copiadas al portapapeles');
+  }).catch(function(){
+    toast('Email: '+u.email+' | Pass: '+u.password);
+  });
+}
+
+// ── RENDER USUARIOS ───────────────────────────────────────────────────────────
+function renderUsuarios(){
+  var html='<div class="ph"><h2>👥 Usuarios</h2><p>Gestioná los accesos al sistema</p></div>';
+
+  // Stats
+  var activos=appUsuarios.filter(function(u){return u.activo!==false;});
+  var porRol={admin:0,socio:0,pdv:0};
+  appUsuarios.forEach(function(u){if(porRol[u.rol]!==undefined)porRol[u.rol]++;});
+
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px">';
+  [
+    ['👥','Total usuarios',appUsuarios.length,''],
+    ['✅','Activos',activos.length,''],
+    ['⚙️','Admins',porRol.admin,''],
+    ['🤝','Socios',porRol.socio,''],
+    ['🏪','PDVs',porRol.pdv,''],
+  ].forEach(function(c){
+    html+='<div style="background:#fff;border:1px solid var(--b);border-radius:14px;padding:16px 18px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">'+c[0]+' '+c[1]+'</div>'
+      +'<div style="font-size:26px;font-weight:800;color:var(--t)">'+c[2]+'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+
+  // Table
+  html+='<div class="card">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">';
+  html+='<div class="ctitle" style="margin-bottom:0">Listado de usuarios</div>';
+  html+='<button class="btn-save" style="padding:10px 20px;font-size:14px" onclick="openModalUsuario()">+ Nuevo usuario</button>';
+  html+='</div>';
+
+  if(!appUsuarios.length){
+    html+='<div style="text-align:center;padding:48px;color:var(--t3)">'
+      +'<div style="font-size:40px;opacity:.2;margin-bottom:14px">👥</div>'
+      +'<p style="font-size:15px;font-weight:500;margin-bottom:8px">No hay usuarios creados</p>'
+      +'<p style="font-size:13px;margin-bottom:20px">Creá el primer usuario para darle acceso al sistema</p>'
+      +'<button class="btn-save" onclick="openModalUsuario()">+ Crear primer usuario</button>'
+      +'</div>';
+  } else {
+    html+='<div class="tw"><table><thead><tr>'
+      +'<th>Usuario</th><th>Email</th><th>Rol</th><th>Terminales</th><th>Estado</th><th>Accesos</th><th>Acciones</th>'
+      +'</tr></thead><tbody>';
+
+    appUsuarios.forEach(function(u,i){
+      var rolColors={admin:'cg',socio:'ca',pdv:'cgr'};
+      var rolLabels={admin:'⚙️ Admin',socio:'🤝 Socio',pdv:'🏪 PDV'};
+      var activo=u.activo!==false;
+      var permCount=u.permisos?Object.values(u.permisos).filter(function(p){return p!=='nada';}).length:0;
+      var termCount=(u.terminales||[]).length;
+
+      html+='<tr style="'+(activo?'':'opacity:.5')+'">';
+      html+='<td>'
+        +'<div style="font-weight:600;font-size:14px">'+u.nombre+'</div>'
+        +'<div style="font-size:11px;color:var(--t3)">Creado: '+new Date(u.creadoEn||Date.now()).toLocaleDateString('es-AR')+'</div>'
+        +'</td>';
+      html+='<td style="font-size:13px;color:var(--t2)">'+u.email+'</td>';
+      html+='<td><span class="chip '+rolColors[u.rol]+'">'+rolLabels[u.rol]+'</span></td>';
+      html+='<td style="text-align:center">';
+      if(u.rol==='admin'){
+        html+='<span style="font-size:12px;color:var(--t3)">Todas</span>';
+      } else if(termCount>0){
+        html+='<span style="font-size:13px;font-weight:600;color:var(--gd)">'+termCount+'</span>'
+          +'<span style="font-size:11px;color:var(--t3)"> terminal'+(termCount!==1?'es':'')+'</span>';
+      } else {
+        html+='<span style="font-size:11px;color:var(--red)">Sin asignar</span>';
+      }
+      html+='</td>';
+      html+='<td>'
+        +'<button onclick="toggleUsuarioActivo('+i+')" style="padding:5px 12px;border-radius:20px;border:1.5px solid '+(activo?'var(--gd)':'var(--t3)')+';background:'+(activo?'var(--gl)':'var(--s2)')+';color:'+(activo?'var(--gd)':'var(--t3)')+';font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">'
+        +(activo?'✅ Activo':'⏸ Inactivo')+'</button>'
+        +'</td>';
+      html+='<td style="text-align:center">';
+      if(u.rol==='admin'){
+        html+='<span style="font-size:12px;color:var(--t3)">Acceso total</span>';
+      } else {
+        var verCount=u.permisos?Object.values(u.permisos).filter(function(p){return p==='ver';}).length:0;
+        var editCount=u.permisos?Object.values(u.permisos).filter(function(p){return p==='editar';}).length:0;
+        html+='<div style="font-size:11px">';
+        if(editCount>0) html+='<span style="color:var(--gd);font-weight:600">'+editCount+' editar</span> ';
+        if(verCount>0) html+='<span style="color:#1d4ed8;font-weight:600">'+verCount+' ver</span>';
+        html+='</div>';
+      }
+      html+='</td>';
+      var invLabel=u.invitadoEn
+        ?'<span style="font-size:10px;color:var(--gd)">✓ '+new Date(u.invitadoEn).toLocaleDateString('es-AR')+'</span>'
+        :'';
+      html+='<td>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">'
+        +'<button class="bsm" onclick="openModalUsuario('+i+')">✏️ Editar</button>'
+        +'<button class="bsm pdf" id="inv-btn-'+i+'" onclick="sendInvitacion('+i+')" title="Enviar email de invitación">📧 Invitar</button>'
+        +'<button class="bsm" onclick="copiarCredenciales('+i+')" title="Copiar credenciales">📋</button>'
+        +'<button class="bsm danger" onclick="eliminarUsuario('+i+')">✕</button>'
+        +'</div>'
+        +invLabel
+        +'</td>';
+      html+='</tr>';
+    });
+
+    html+='</tbody></table></div>';
+  }
+  html+='</div>';
+
+  // Info box
+  html+='<div class="info-banner" style="margin-top:16px"><span class="ii">💡</span>'
+    +'<div><strong>Cómo funciona:</strong> Creá el usuario con email y contraseña. Asignale el rol y personalizá qué secciones puede ver o editar. '
+    +'Usá el botón 📋 para copiar las credenciales y enviárselas al usuario. '
+    +'Los PDVs solo ven sus propias terminales asignadas.</div></div>';
+
+  return html;
+}
+
+// ── LOGIN CON SISTEMA DE USUARIOS ─────────────────────────────────────────────
+function getUsuarioByEmail(email){
+  return appUsuarios.find(function(u){return u.email===email&&u.activo!==false;});
+}
+
+function buildNavFromPermisos(usr){
+  if(!usr||usr.rol==='admin') return;
+  // Filter nav items based on permisos
+  var permisos=usr.permisos||{};
+  var navEl=document.getElementById('nav-list');
+  if(!navEl) return;
+  document.querySelectorAll('.ni').forEach(function(el){
+    var page=el.id.replace('nav-','');
+    var perm=permisos[page];
+    if(perm==='nada'||!perm){
+      el.style.display='none';
+    } else {
+      el.style.display='';
+    }
+  });
+}
+
+// ── EMAIL INVITACIONES (Resend) ───────────────────────────────────────────────
+var RESEND_API_KEY='re_9wFyqBcA_swVMNAi3x7uojDHFd6x93diu';
+var EMAIL_FROM='PayNorth <onboarding@resend.dev>';
+var APP_URL='https://paynorth.github.io/paynorth';
+
+function sendInvitacion(idx){
+  var u=appUsuarios[idx];
+  if(!u){toast('Usuario no encontrado');return;}
+
+  var btn=document.getElementById('inv-btn-'+idx);
+  if(btn){btn.textContent='Enviando...';btn.disabled=true;}
+
+  var rolLabel=u.rol==='admin'?'Administrador':u.rol==='socio'?'Socio':'Punto de Venta';
+
+  var htmlEmail='<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#f4f6f5;font-family:Outfit,Arial,sans-serif">'
+    +'<div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">'
+    +'<div style="background:#1a7a4a;padding:32px 36px">'
+    +'<div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">PayNorth</div>'
+    +'<div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">Soluciones de pago</div>'
+    +'</div>'
+    +'<div style="padding:36px">'
+    +'<h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a2e24">Hola, '+u.nombre+' 👋</h2>'
+    +'<p style="color:#5a7a6a;font-size:15px;margin:0 0 24px;line-height:1.6">Te damos la bienvenida a <strong>PayNorth</strong>. Tu cuenta fue creada con el rol de <strong>'+rolLabel+'</strong>.</p>'
+    +'<div style="background:#f0faf5;border:1px solid #c3e6d4;border-radius:12px;padding:20px;margin-bottom:24px">'
+    +'<div style="font-size:12px;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">TUS CREDENCIALES DE ACCESO</div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px"><span style="color:#5a7a6a">Email:</span><strong style="color:#1a2e24">'+u.email+'</strong></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:#5a7a6a">Contraseña:</span><strong style="color:#1a2e24;font-family:monospace;letter-spacing:.5px">'+u.password+'</strong></div>'
+    +'</div>'
+    +'<a href="'+APP_URL+'" style="display:block;text-align:center;background:#1a7a4a;color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;margin-bottom:24px">Ingresar a PayNorth →</a>'
+    +'<p style="color:#8aaa9a;font-size:12px;line-height:1.6;margin:0">Por seguridad, te recomendamos cambiar tu contraseña después del primer ingreso. Si tenés algún problema para acceder, contactá a tu administrador.</p>'
+    +'</div>'
+    +'<div style="background:#f4f6f5;padding:16px 36px;text-align:center">'
+    +'<p style="color:#8aaa9a;font-size:12px;margin:0">© 2026 PayNorth — Soluciones de pago</p>'
+    +'</div>'
+    +'</div></body></html>';
+
+  fetch('https://paynorth-email.valen-mendez.workers.dev',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      to: u.email,
+      subject: 'Tu acceso a PayNorth — Bienvenido/a, '+u.nombre,
+      html: htmlEmail,
+      nombre: u.nombre
+    })
+  }).then(function(res){
+    if(btn){btn.textContent='📧 Invitar';btn.disabled=false;}
+    if(res.ok){
+      toast('✅ Invitación enviada a '+u.email);
+      // Marcar como invitado
+      appUsuarios[idx].invitadoEn=new Date().toISOString();
+      saveUsuarios();
+      navigate('usuarios');
+    } else {
+      res.json().then(function(err){
+        toast('Error al enviar: '+(err.message||'Error desconocido'));
+        console.error('Resend error:',err);
+      });
+    }
+  }).catch(function(e){
+    if(btn){btn.textContent='📧 Invitar';btn.disabled=false;}
+    toast('Error de conexión al enviar email');
+    console.error(e);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SOCIOS
+// ══════════════════════════════════════════════════════════════════════════════
+
+var appSocios=[];
+// Estructura socio: {id, nombre, usuarioId, pctAdmin, pctSocio,
+//   tieneVendedor, vendedorNombre, vendedorPctDefault,
+//   terminales: [{terminal, vendedorPct}],
+//   creadoEn}
+
+function loadSocios(){
+  try{ var s=localStorage.getItem('pn_socios'); if(s) appSocios=JSON.parse(s); }catch(e){}
+}
+function saveSocios(){
+  try{ localStorage.setItem('pn_socios',JSON.stringify(appSocios)); }catch(e){}
+}
+loadSocios();
+
+var _editSocioIdx=null;
+
+function toggleVendedor(){
+  var val=document.querySelector('[name="soc-vendedor"]:checked').value;
+  document.getElementById('soc-vendedor-section').style.display=val==='si'?'':'none';
+}
+
+function filterSocTermList(){
+  var q=(document.getElementById('soc-term-search')||{value:''}).value.toLowerCase();
+  var items=document.querySelectorAll('.soc-term-item');
+  items.forEach(function(el){
+    var txt=el.textContent.toLowerCase();
+    el.style.display=!q||txt.indexOf(q)>=0?'':'none';
+  });
+}
+
+function asignarGrupoASocio(){
+  var sel=document.getElementById('soc-grupo-sel');
+  var grupoId=sel.value;
+  if(!grupoId) return;
+  var g=grupos.find(function(x){return x.id===grupoId;});
+  if(!g) return;
+  // Check all terminals of this group
+  g.terminales.forEach(function(term){
+    var cb=document.querySelector('.soc-term-cb[value="'+term+'"]');
+    if(cb) cb.checked=true;
+  });
+  toast('✅ '+g.terminales.length+' terminales del grupo "'+g.nombre+'" seleccionadas');
+}
+
+function buildSocTermList(checkedTerms, vendedorPcts){
+  var list=document.getElementById('soc-term-list');
+  if(!list) return;
+  list.innerHTML=pdvs.map(function(p){
+    var checked=checkedTerms.indexOf(p.terminal)>=0;
+    var vPct=vendedorPcts&&vendedorPcts[p.terminal]!==undefined?vendedorPcts[p.terminal]:'';
+    var g=getGrupoDeTerminal(p.terminal);
+    return'<div class="soc-term-item" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:4px">'
+      +'<input type="checkbox" class="soc-term-cb" value="'+p.terminal+'" '+(checked?'checked':'')+' style="width:15px;height:15px;cursor:pointer;flex-shrink:0"/>'
+      +'<span style="flex:1;font-size:13px;font-weight:500">'+(p.nombre&&p.nombre!=='Prueba'?p.nombre:'Sin nombre')+'</span>'
+      +'<span style="font-size:11px;color:var(--t3);font-family:monospace">'+p.terminal+'</span>'
+      +(g?'<span style="background:'+g.color+'22;color:'+g.color+';font-size:10px;padding:1px 6px;border-radius:8px">'+g.nombre+'</span>':'')
+      +'<input type="number" class="soc-term-pct" data-term="'+p.terminal+'" value="'+vPct+'" placeholder="%" step="0.1" min="0" style="width:58px;padding:4px 6px;border:1px solid var(--b);border-radius:6px;font-size:12px;font-family:inherit" title="% vendedor para esta terminal"/>'
+      +'</div>';
+  }).join('');
+}
+
+function openModalSocio(idx){
+  _editSocioIdx=idx===undefined?null:idx;
+  var s=idx!==undefined?appSocios[idx]:{};
+  document.getElementById('socio-modal-title').textContent=idx!==undefined?'Editar Socio':'Nuevo Socio';
+  document.getElementById('soc-nombre').value=s.nombre||'';
+  document.getElementById('soc-pct-admin').value=s.pctAdmin!==undefined?s.pctAdmin:60;
+  document.getElementById('soc-pct-socio').value=s.pctSocio!==undefined?s.pctSocio:40;
+  document.getElementById('soc-vend-nombre').value=s.vendedorNombre||'';
+  document.getElementById('soc-vend-pct').value=s.vendedorPctDefault||0.5;
+
+  var tieneVend=s.tieneVendedor?'si':'no';
+  document.querySelectorAll('[name="soc-vendedor"]').forEach(function(r){r.checked=r.value===tieneVend;});
+  document.getElementById('soc-vendedor-section').style.display=s.tieneVendedor?'':'none';
+
+  // Populate usuario dropdown
+  var sel=document.getElementById('soc-usuario');
+  sel.innerHTML='<option value="">Sin usuario vinculado</option>';
+  appUsuarios.filter(function(u){return u.rol==='socio';}).forEach(function(u){
+    sel.innerHTML+='<option value="'+u.id+'"'+(s.usuarioId===u.id?' selected':'')+'>'+u.nombre+' ('+u.email+')</option>';
+  });
+
+  // Populate grupo dropdown
+  var gsel=document.getElementById('soc-grupo-sel');
+  gsel.innerHTML='<option value="">— Seleccionar por grupo —</option>';
+  grupos.forEach(function(g){
+    gsel.innerHTML+='<option value="'+g.id+'">'+g.nombre+' ('+g.terminales.length+' terminales)</option>';
+  });
+
+  // Build terminal list
+  var checkedTerms=(s.terminales||[]).map(function(t){return t.terminal||t;});
+  var vendedorPcts={};
+  (s.terminales||[]).forEach(function(t){if(t.terminal) vendedorPcts[t.terminal]=t.vendedorPct;});
+  buildSocTermList(checkedTerms, vendedorPcts);
+
+  document.getElementById('modal-socio').classList.add('open');
+}
+
+function saveSocio(){
+  var nombre=document.getElementById('soc-nombre').value.trim();
+  var usuarioId=document.getElementById('soc-usuario').value;
+  var pctAdmin=parseFloat(document.getElementById('soc-pct-admin').value)||60;
+  var pctSocio=parseFloat(document.getElementById('soc-pct-socio').value)||40;
+  var tieneVendedor=document.querySelector('[name="soc-vendedor"]:checked').value==='si';
+  var vendedorNombre=document.getElementById('soc-vend-nombre').value.trim();
+  var vendedorPctDefault=parseFloat(document.getElementById('soc-vend-pct').value)||0.5;
+
+  if(!nombre){toast('El nombre es obligatorio');return;}
+
+  // Collect terminals with individual vendedor pct
+  var terminales=[];
+  document.querySelectorAll('.soc-term-cb:checked').forEach(function(cb){
+    var term=cb.value;
+    var pctInput=document.querySelector('.soc-term-pct[data-term="'+term+'"]');
+    var vPct=pctInput&&pctInput.value!==''?parseFloat(pctInput.value):vendedorPctDefault;
+    terminales.push({terminal:term, vendedorPct:vPct});
+  });
+
+  var socio={
+    id:_editSocioIdx!==null&&appSocios[_editSocioIdx]?appSocios[_editSocioIdx].id:('soc-'+Date.now()),
+    nombre:nombre,
+    usuarioId:usuarioId,
+    pctAdmin:pctAdmin,
+    pctSocio:pctSocio,
+    tieneVendedor:tieneVendedor,
+    vendedorNombre:vendedorNombre,
+    vendedorPctDefault:vendedorPctDefault,
+    terminales:terminales,
+    creadoEn:_editSocioIdx!==null&&appSocios[_editSocioIdx]?appSocios[_editSocioIdx].creadoEn:new Date().toISOString(),
+  };
+
+  if(_editSocioIdx!==null) appSocios[_editSocioIdx]=socio;
+  else appSocios.push(socio);
+  saveSocios();
+  closeModal('modal-socio');
+  navigate('socios');
+  toast('Socio "'+nombre+'" guardado');
+}
+
+function eliminarSocio(idx){
+  if(!confirm('Eliminar socio "'+appSocios[idx].nombre+'"?')) return;
+  appSocios.splice(idx,1);
+  saveSocios();
+  navigate('socios');
+  toast('Socio eliminado');
+}
+
+// ── CALCULAR RESULTADO DE SOCIO ───────────────────────────────────────────────
+function calcSocioResultado(socio, txsFuente){
+  var termIds=socio.terminales.map(function(t){return t.terminal||t;});
+  var txs=(txsFuente||transactions).filter(function(t){
+    return t.estado==='aprobada'&&termIds.indexOf(t.terminal)>=0;
+  });
+
+  var volBruto=txs.reduce(function(s,t){return s+t.monto;},0);
+
+  // Costo Payway
+  var costPayway=txs.reduce(function(s,t){
+    var r=t.tipo==='credito'?costoPN.cred:t.tipo==='debito'?costoPN.deb:costoPN.qr;
+    return s+(t.monto*r/100);
+  },0);
+
+  // Comisión PayNorth a terminales
+  var comPaynorth=txs.reduce(function(s,t){
+    var pdv=pdvs.find(function(p){return p.terminal===t.terminal;});
+    if(!pdv) return s;
+    var r=t.tipo==='credito'?pdv.comCred:t.tipo==='debito'?pdv.comDeb:pdv.comQr;
+    return s+(t.monto*r/100);
+  },0);
+
+  // Ganancia bruta
+  var gananciaBruta=comPaynorth-costPayway;
+
+  // Comisión vendedor (por terminal si está configurado)
+  var comVendedor=0;
+  if(socio.tieneVendedor){
+    txs.forEach(function(t){
+      var termConf=socio.terminales.find(function(x){return (x.terminal||x)===t.terminal;});
+      var pct=termConf&&termConf.vendedorPct!==undefined?termConf.vendedorPct:socio.vendedorPctDefault;
+      comVendedor+=gananciaBruta*(pct/100)*(t.monto/volBruto); // proporcional al volumen
+    });
+    // Simplificado: aplicar sobre ganancia bruta total ponderado
+    comVendedor=0;
+    socio.terminales.forEach(function(termConf){
+      var term=termConf.terminal||termConf;
+      var pct=termConf.vendedorPct!==undefined?termConf.vendedorPct:socio.vendedorPctDefault;
+      var txsTerm=txs.filter(function(t){return t.terminal===term;});
+      var volTerm=txsTerm.reduce(function(s,t){return s+t.monto;},0);
+      var costTerm=txsTerm.reduce(function(s,t){
+        var r=t.tipo==='credito'?costoPN.cred:t.tipo==='debito'?costoPN.deb:costoPN.qr;
+        return s+(t.monto*r/100);
+      },0);
+      var comTerm=txsTerm.reduce(function(s,t){
+        var pdv=pdvs.find(function(p){return p.terminal===t.terminal;});
+        if(!pdv) return s;
+        var r=t.tipo==='credito'?pdv.comCred:t.tipo==='debito'?pdv.comDeb:pdv.comQr;
+        return s+(t.monto*r/100);
+      },0);
+      var ganTerm=comTerm-costTerm;
+      comVendedor+=ganTerm*(pct/100);
+    });
+  }
+
+  var gananciaNeta=gananciaBruta-comVendedor;
+  var parteAdmin=gananciaNeta*(socio.pctAdmin/100);
+  var parteSocio=gananciaNeta*(socio.pctSocio/100);
+
+  return{
+    volBruto:volBruto,
+    costPayway:costPayway,
+    comPaynorth:comPaynorth,
+    gananciaBruta:gananciaBruta,
+    comVendedor:comVendedor,
+    gananciaNeta:gananciaNeta,
+    parteAdmin:parteAdmin,
+    parteSocio:parteSocio,
+    txCount:txs.length,
+    termCount:termIds.length,
+  };
+}
+
+// ── RENDER SOCIOS ─────────────────────────────────────────────────────────────
+function renderSocios(){
+  // Período — usa el mismo selector que Balance
+  var semanas=Object.values(historial).sort(function(a,b){return b.key.localeCompare(a.key);});
+  var opcionesHTML='<option value="actual">Semana actual (CSV importado)</option>';
+  semanas.forEach(function(h){opcionesHTML+='<option value="'+h.key+'">'+h.label+' ('+h.from+' al '+h.to+')</option>';});
+  if(semanas.length>0) opcionesHTML+='<option value="todo">Todo el historial</option>';
+
+  var txsFuente=[];
+  var socioPeriodo=window._socioPeriodo||'actual';
+  if(socioPeriodo==='actual'){
+    txsFuente=transactions;
+  } else if(socioPeriodo==='todo'){
+    semanas.forEach(function(h){if(h.txs) txsFuente=txsFuente.concat(h.txs);});
+  } else {
+    var sem=historial[socioPeriodo];
+    if(sem&&sem.txs) txsFuente=sem.txs;
+  }
+
+  var html='<div class="ph"><h2>🤝 Socios</h2><p>Gestión de socios, vendedores y distribución de ganancias</p></div>';
+
+  // Período selector
+  html+='<div class="card" style="margin-bottom:16px">'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<div style="font-size:14px;font-weight:500;color:var(--t2)">Período:</div>'
+    +'<select onchange="window._socioPeriodo=this.value;navigate(\'socios\')" style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:inherit;font-size:14px;color:var(--t);background:#fff;cursor:pointer">'+opcionesHTML+'</select>'
+    +'</div></div>';
+
+  if(!appSocios.length){
+    html+='<div class="card" style="text-align:center;padding:48px">'
+      +'<div style="font-size:40px;opacity:.2;margin-bottom:14px">🤝</div>'
+      +'<p style="font-size:15px;font-weight:500;margin-bottom:8px">No hay socios configurados</p>'
+      +'<p style="font-size:13px;color:var(--t3);margin-bottom:20px">Creá el primer socio para ver la distribución de ganancias</p>'
+      +'<button class="btn-save" onclick="openModalSocio()">+ Crear primer socio</button>'
+      +'</div>';
+    return html;
+  }
+
+  // Totales globales de todos los socios
+  var totalParteSocio=0, totalParteAdmin=0;
+  appSocios.forEach(function(s){
+    var r=calcSocioResultado(s,txsFuente);
+    totalParteSocio+=r.parteSocio;
+    totalParteAdmin+=r.parteAdmin;
+  });
+
+  // Cards resumen
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px">';
+  html+='<div style="background:#fff;border:1px solid var(--b);border-radius:14px;padding:18px 20px">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🤝 Socios</div>'
+    +'<div style="font-size:26px;font-weight:800">'+appSocios.length+'</div></div>';
+  html+='<div style="background:var(--gl);border:1px solid var(--b);border-radius:14px;padding:18px 20px">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--gd);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">💰 Mi parte total</div>'
+    +'<div style="font-size:24px;font-weight:800;color:var(--gd)">'+fmt(totalParteAdmin)+'</div></div>';
+  html+='<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:14px;padding:18px 20px">'
+    +'<div style="font-size:11px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🤝 A pagar socios</div>'
+    +'<div style="font-size:24px;font-weight:800;color:#0369a1">'+fmt(totalParteSocio)+'</div></div>';
+  html+='<div style="display:flex;align-items:center;justify-content:center">'
+    +'<button class="btn-save" style="padding:12px 24px;font-size:14px" onclick="openModalSocio()">+ Nuevo socio</button>'
+    +'</div>';
+  html+='</div>';
+
+  // Cards por socio
+  appSocios.forEach(function(s,i){
+    var r=calcSocioResultado(s,txsFuente);
+    var usr=appUsuarios.find(function(u){return u.id===s.usuarioId;});
+
+    html+='<div class="card" style="margin-bottom:16px">';
+
+    // Header
+    html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">';
+    html+='<div>'
+      +'<div style="font-size:18px;font-weight:700">'+s.nombre+'</div>'
+      +'<div style="font-size:12px;color:var(--t3);margin-top:2px">'
+      +s.terminales.length+' terminales'
+      +(usr?' &nbsp;·&nbsp; 👤 '+usr.nombre:'')
+      +(s.tieneVendedor?' &nbsp;·&nbsp; 📦 Vendedor: '+s.vendedorNombre:'')
+      +'</div>'
+      +'</div>';
+    html+='<div style="display:flex;gap:6px">'
+      +'<button class="bsm" onclick="openModalSocio('+i+')">✏️ Editar</button>'
+      +'<button class="bsm danger" onclick="eliminarSocio('+i+')">✕</button>'
+      +'</div></div>';
+
+    // Matemática
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+
+    // Waterfall de cálculo
+    html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:16px">';
+    html+='<div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Cálculo de ganancia</div>';
+
+    function brow(label, val, color, sub){
+      return'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">'
+        +'<span style="font-size:13px;color:var(--t2)">'+label+'</span>'
+        +'<span style="font-size:14px;font-weight:600;color:'+(color||'var(--t)')+'">'+val+'</span>'
+        +'</div>';
+    }
+
+    html+=brow('Vol. bruto terminales', fmt(r.volBruto));
+    html+=brow('− Costo Payway', '-'+fmt(r.costPayway), 'var(--red)');
+    html+=brow('+ Comisión PayNorth', '+'+fmt(r.comPaynorth), 'var(--gd)');
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:2px solid var(--g)">'
+      +'<span style="font-size:13px;font-weight:600">Ganancia bruta</span>'
+      +'<span style="font-size:15px;font-weight:700;color:var(--g)">'+fmt(r.gananciaBruta)+'</span>'
+      +'</div>';
+    if(s.tieneVendedor){
+      html+=brow('− Comisión vendedor ('+s.vendedorNombre+')', '-'+fmt(r.comVendedor), 'var(--red)');
+    }
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">'
+      +'<span style="font-size:13px;font-weight:700">Ganancia neta</span>'
+      +'<span style="font-size:16px;font-weight:800;color:var(--gd)">'+fmt(r.gananciaNeta)+'</span>'
+      +'</div>';
+    html+='</div>';
+
+    // Distribución
+    html+='<div style="background:var(--gp);border:1px solid var(--b2);border-radius:var(--rs);padding:16px">';
+    html+='<div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Distribución '+s.pctAdmin+'% / '+s.pctSocio+'%</div>';
+
+    // Barra visual
+    var pctA=s.pctAdmin, pctS=s.pctSocio;
+    html+='<div style="display:flex;border-radius:8px;overflow:hidden;height:28px;margin-bottom:14px">'
+      +'<div style="width:'+pctA+'%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">'+pctA+'%</div>'
+      +'<div style="width:'+pctS+'%;background:#0369a1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">'+pctS+'%</div>'
+      +'</div>';
+
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    html+='<div style="background:var(--gl);border-radius:10px;padding:14px;text-align:center">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--gd);text-transform:uppercase;margin-bottom:4px">💰 Mi parte</div>'
+      +'<div style="font-size:22px;font-weight:800;color:var(--gd)">'+fmt(r.parteAdmin)+'</div>'
+      +'</div>';
+    html+='<div style="background:#f0f9ff;border-radius:10px;padding:14px;text-align:center">'
+      +'<div style="font-size:11px;font-weight:700;color:#0369a1;text-transform:uppercase;margin-bottom:4px">🤝 A pagar</div>'
+      +'<div style="font-size:22px;font-weight:800;color:#0369a1">'+fmt(r.parteSocio)+'</div>'
+      +'</div>';
+    html+='</div></div></div>';
+
+    // Terminales del socio
+    html+='<details style="margin-top:4px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--t2);padding:6px 0">Ver detalle por terminal ('+s.terminales.length+')</summary>';
+    html+='<div class="tw" style="margin-top:10px"><table style="font-size:12px"><thead><tr>';
+    html+='<th>Terminal</th><th>Nombre</th><th style="text-align:right">Vol. Bruto</th><th style="text-align:right">Costo Pay.</th><th style="text-align:right">Com. PN</th><th style="text-align:right">Gan. Bruta</th>';
+    if(s.tieneVendedor) html+='<th style="text-align:center">% Vend.</th><th style="text-align:right">Com. Vend.</th>';
+    html+='<th style="text-align:right">Gan. Neta</th><th style="text-align:right">Parte Socio</th>';
+    html+='</tr></thead><tbody>';
+
+    s.terminales.forEach(function(termConf){
+      var term=termConf.terminal||termConf;
+      var vPct=termConf.vendedorPct!==undefined?termConf.vendedorPct:s.vendedorPctDefault;
+      var pdv=pdvs.find(function(p){return p.terminal===term;});
+      var txsTerm=(txsFuente||transactions).filter(function(t){return t.estado==='aprobada'&&t.terminal===term;});
+      var volT=txsTerm.reduce(function(s,t){return s+t.monto;},0);
+      var costT=txsTerm.reduce(function(s,t){var r=t.tipo==='credito'?costoPN.cred:t.tipo==='debito'?costoPN.deb:costoPN.qr;return s+(t.monto*r/100);},0);
+      var comT=txsTerm.reduce(function(s,t){var p=pdvs.find(function(p){return p.terminal===t.terminal;});if(!p)return s;var r=t.tipo==='credito'?p.comCred:t.tipo==='debito'?p.comDeb:p.comQr;return s+(t.monto*r/100);},0);
+      var ganBT=comT-costT;
+      var comVT=s.tieneVendedor?ganBT*(vPct/100):0;
+      var ganNT=ganBT-comVT;
+      var parteT=ganNT*(s.pctSocio/100);
+
+      html+='<tr>';
+      html+='<td class="mono">'+term+'</td>';
+      html+='<td><strong>'+(pdv&&pdv.nombre!=='Prueba'?pdv.nombre:'—')+'</strong></td>';
+      html+='<td style="text-align:right">'+fmt(volT)+'</td>';
+      html+='<td style="text-align:right;color:var(--red)">'+fmt(costT)+'</td>';
+      html+='<td style="text-align:right;color:var(--gd)">'+fmt(comT)+'</td>';
+      html+='<td style="text-align:right;font-weight:600">'+fmt(ganBT)+'</td>';
+      if(s.tieneVendedor){
+        html+='<td style="text-align:center">'+vPct+'%</td>';
+        html+='<td style="text-align:right;color:var(--red)">'+fmt(comVT)+'</td>';
+      }
+      html+='<td style="text-align:right;font-weight:600;color:var(--gd)">'+fmt(ganNT)+'</td>';
+      html+='<td style="text-align:right;font-weight:700;color:#0369a1">'+fmt(parteT)+'</td>';
+      html+='</tr>';
+    });
+
+    html+='</tbody></table></div></details>';
+    html+='</div>';
+  });
 
   return html;
 }
