@@ -505,15 +505,28 @@ var SUPA_URL='https://rvsfiowvpqmhkobkpsgm.supabase.co';
 var SUPA_KEY='sb_publishable_dYrOmg3tkslq2nvyB0G_XQ_-TvZdPh4';
 var supa=null;
 function initSupa(){
+  // Evitar crear múltiples instancias
+  if(supa) return true;
   try{
-    if(window.supabase) supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+    if(window.supabase&&window.supabase.createClient){
+      supa=window.supabase.createClient(SUPA_URL,SUPA_KEY,{
+        auth:{persistSession:true,storageKey:'pn_auth_'+SUPA_URL.split('.')[0].split('//')[1]}
+      });
+      return true;
+    }
   }catch(e){ console.warn('Supabase no disponible',e); }
+  return false;
 }
-// Intentar init inmediato y también cuando cargue el SDK
+// Intentar init inmediato
 initSupa();
-document.addEventListener('DOMContentLoaded',function(){
-  if(!supa) initSupa();
-});
+// Si no cargó, reintentar hasta que el SDK esté disponible
+if(!supa){
+  var _supaRetry=0;
+  var _supaInterval=setInterval(function(){
+    if(initSupa()||_supaRetry>20) clearInterval(_supaInterval);
+    _supaRetry++;
+  },200);
+}
 
 // ── DB: PDVs ─────────────────────────────────────────────────────────────────
 async function dbLoadPDVs(){
@@ -598,6 +611,84 @@ async function dbDeleteHistorialWeek(key){
   try{
     await supa.from('historial').delete().eq('week_key',key);
   }catch(e){ console.error('dbDeleteHistorialWeek error:',e); }
+}
+
+
+// ── DB: GRUPOS ────────────────────────────────────────────────────────────────
+async function dbLoadGrupos(){
+  if(!supa) return;
+  try{
+    var res=await supa.from('grupos').select('*').order('nombre');
+    if(res.error){ console.warn('Grupos no disponible en Supabase, usando localStorage'); return; }
+    if(res.data&&res.data.length>0){
+      grupos=res.data.map(function(r){
+        return{id:r.id,nombre:r.nombre,color:r.color,terminales:r.terminales||[]};
+      });
+    }
+  }catch(e){ console.warn('Error cargando grupos:',e); }
+}
+
+async function dbSaveGrupo(g){
+  if(!supa) return;
+  try{
+    await supa.from('grupos').upsert({
+      id:g.id, nombre:g.nombre, color:g.color, terminales:g.terminales
+    });
+  }catch(e){ console.warn('Error guardando grupo:',e); }
+}
+
+async function dbDeleteGrupo(id){
+  if(!supa) return;
+  try{ await supa.from('grupos').delete().eq('id',id); }catch(e){ console.warn('Error borrando grupo:',e); }
+}
+
+// ── DB: SOCIOS ────────────────────────────────────────────────────────────────
+async function dbLoadSocios(){
+  if(!supa) return;
+  try{
+    var res=await supa.from('socios').select('*').order('nombre');
+    if(res.error){ console.warn('Socios no disponible en Supabase, usando localStorage'); return; }
+    if(res.data&&res.data.length>0){
+      appSocios=res.data.map(function(r){
+        return{
+          id:r.id, nombre:r.nombre, usuarioId:r.usuario_id,
+          pctAdmin:r.pct_admin, pctSocio:r.pct_socio,
+          tieneVendedor:r.tiene_vendedor, vendedorNombre:r.vendedor_nombre,
+          vendedorPctDefault:r.vendedor_pct_default,
+          terminales:r.terminales||[]
+        };
+      });
+    }
+  }catch(e){ console.warn('Error cargando socios:',e); }
+}
+
+async function dbSaveSocio(s){
+  if(!supa) return;
+  try{
+    await supa.from('socios').upsert({
+      id:s.id, nombre:s.nombre, usuario_id:s.usuarioId,
+      pct_admin:s.pctAdmin, pct_socio:s.pctSocio,
+      tiene_vendedor:s.tieneVendedor, vendedor_nombre:s.vendedorNombre,
+      vendedor_pct_default:s.vendedorPctDefault,
+      terminales:s.terminales
+    });
+  }catch(e){ console.warn('Error guardando socio:',e); }
+}
+
+async function dbDeleteSocio(id){
+  if(!supa) return;
+  try{ await supa.from('socios').delete().eq('id',id); }catch(e){ console.warn('Error borrando socio:',e); }
+}
+
+// ── DB: COMISIONES (guardar en pdvs) ─────────────────────────────────────────
+async function dbSaveComisiones(terminal, comCred, comDeb, comQr, comProp, cbu){
+  if(!supa) return;
+  try{
+    await supa.from('pdvs').update({
+      com_cred:comCred, com_deb:comDeb, com_qr:comQr,
+      com_prop:comProp||0, cbu:cbu||''
+    }).eq('terminal',terminal);
+  }catch(e){ console.warn('Error guardando comisiones:',e); }
 }
 
 var role='admin', editIdx=null, liqIdx=null, transactions=[], transactionsQR=[];
@@ -860,6 +951,8 @@ loadHistorial();
 // Al cargar la página siempre mostrar login screen primero
 // Si hay sesión activa la detectamos y entramos automáticamente
 window.addEventListener('load', function(){
+  // Limpiar datos sensibles que no deben persistir
+  ['pn_session','pn_token','pn_pass'].forEach(function(k){ localStorage.removeItem(k); });
   try{
   // Siempre mostrar login primero
   document.getElementById('login-screen').style.display='flex';
@@ -879,8 +972,9 @@ window.addEventListener('load', function(){
       document.getElementById('snm').textContent=usr.name;
       document.getElementById('srl').textContent=role==='admin'?'Administrador':'Punto de Venta';
       buildNav();
+      resetSessionTimer();
       document.getElementById('mc').innerHTML='<div style="text-align:center;padding:80px;color:var(--t3)"><div style="font-size:32px;margin-bottom:16px">⏳</div><div style="font-size:15px">Cargando datos...</div></div>';
-      Promise.all([dbLoadPDVs(),dbLoadHistorial()]).then(function(){
+      Promise.all([dbLoadPDVs(),dbLoadHistorial(),dbLoadGrupos(),dbLoadSocios()]).then(function(){
         navigate('dashboard');
       });
     }
@@ -974,6 +1068,74 @@ function entrarConDatos(email){
   }
 }
 
+
+// ── SEGURIDAD: SESSION TIMEOUT Y PROTECCIÓN ──────────────────────────────────
+var _sessionTimeout=null;
+var SESSION_MINUTES=30;
+var _loginAttempts=0;
+var _loginBlocked=false;
+var _loginBlockUntil=0;
+
+function resetSessionTimer(){
+  clearTimeout(_sessionTimeout);
+  _sessionTimeout=setTimeout(function(){
+    if(document.getElementById('app').style.display!=='none'){
+      cerrarSesion();
+      alert('Tu sesión expiró por inactividad ('+SESSION_MINUTES+' min). Ingresá nuevamente.');
+    }
+  }, SESSION_MINUTES*60*1000);
+}
+
+// Resetear timer con cualquier actividad
+['click','keypress','scroll','mousemove','touchstart'].forEach(function(ev){
+  document.addEventListener(ev, resetSessionTimer, {passive:true});
+});
+
+function cerrarSesion(){
+  clearTimeout(_sessionTimeout);
+  // Limpiar datos sensibles de memoria
+  transactions=[];
+  if(typeof supa!=='undefined'&&supa){
+    try{ supa.auth.signOut(); }catch(e){}
+  }
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('lp').value='';
+  // Limpiar localStorage sensible
+  ['pn_session','pn_token'].forEach(function(k){ localStorage.removeItem(k); });
+}
+
+// ── PROTECCIÓN CONTRA FUERZA BRUTA ───────────────────────────────────────────
+function checkLoginBlock(){
+  if(_loginBlocked&&Date.now()<_loginBlockUntil) return true;
+  if(_loginBlocked&&Date.now()>=_loginBlockUntil){
+    _loginBlocked=false;
+    _loginAttempts=0;
+  }
+  return false;
+}
+
+function registrarIntentoFallido(){
+  _loginAttempts++;
+  if(_loginAttempts>=3){
+    _loginBlocked=true;
+    _loginBlockUntil=Date.now()+5*60*1000; // 5 minutos bloqueado
+    var el=document.getElementById('login-error');
+    if(el) el.textContent='Demasiados intentos fallidos. Esperá 5 minutos.';
+    // Deshabilitar botón
+    var btn=document.querySelector('#login-screen button');
+    if(btn){
+      btn.disabled=true;
+      setTimeout(function(){
+        btn.disabled=false;
+        _loginAttempts=0;
+        _loginBlocked=false;
+        if(el) el.textContent='';
+      }, 5*60*1000);
+    }
+  }
+}
+
 function doLogin(){
   var u=(document.getElementById('lu').value||'').trim().toLowerCase();
   var p=(document.getElementById('lp').value||'').trim();
@@ -1051,7 +1213,7 @@ var NAV_ICONS={
   'pendientes': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>',
   'usuarios': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>',
 };
-var navAdmin=[{id:'dashboard',ic:'dashboard',lbl:'Dashboard'},{id:'puntos',ic:'puntos',lbl:'Puntos de Venta'},{id:'importar',ic:'importar',lbl:'Importar CSV'},{id:'historial',ic:'historial',lbl:'Historial'},{id:'pendientes',ic:'pendientes',lbl:'Pendientes'},{id:'guardar',ic:'guardar',lbl:'Cierre de Semana'},{id:'liquidaciones',ic:'liquidaciones',lbl:'Liquidaciones'},{id:'balance',ic:'balance',lbl:'Balance General'},{id:'conciliacion',ic:'conciliacion',lbl:'Ventas'},{id:'caja',ic:'caja',lbl:'Caja'},{id:'socios',ic:'socios',lbl:'Socios'},{id:'comisiones',ic:'comisiones',lbl:'Comisiones'},{id:'usuarios',ic:'usuarios',lbl:'Usuarios'}];
+var navAdmin=[{id:'dashboard',ic:'dashboard',lbl:'Dashboard'},{id:'puntos',ic:'puntos',lbl:'Puntos de Venta'},{id:'importar',ic:'importar',lbl:'Importar CSV'},{id:'guardar',ic:'guardar',lbl:'Cierre de Semana'},{id:'historial',ic:'historial',lbl:'Historial'},{id:'pendientes',ic:'pendientes',lbl:'Pendientes'},{id:'liquidaciones',ic:'liquidaciones',lbl:'Liquidaciones'},{id:'conciliacion',ic:'conciliacion',lbl:'Ventas'},{id:'balance',ic:'balance',lbl:'Balance General'},{id:'caja',ic:'caja',lbl:'Caja'},{id:'socios',ic:'socios',lbl:'Socios'},{id:'comisiones',ic:'comisiones',lbl:'Comisiones'},{id:'usuarios',ic:'usuarios',lbl:'Usuarios'}];
 var navPDV=[{id:'mi-panel',ic:'🏪',lbl:'Mi Panel'},{id:'mis-comisiones',ic:'📋',lbl:'Mis Comisiones'}];
 
 function buildNav(){
@@ -3777,8 +3939,10 @@ function guardarEditGrupo(gi){
 function eliminarGrupoIdx(gi){
   if(!grupos[gi]) return;
   if(!confirm('Eliminar el grupo "'+grupos[gi].nombre+'"? Las terminales quedan sin grupo.')) return;
+  var gid=grupos[gi].id;
   grupos.splice(gi,1);
   saveGrupos();
+  if(supa) dbDeleteGrupo(gid);
   renderGruposModal();
   navigate('puntos');
   toast('Grupo eliminado');
@@ -4844,6 +5008,10 @@ function loadSocios(){
 }
 function saveSocios(){
   try{ localStorage.setItem('pn_socios',JSON.stringify(appSocios)); }catch(e){}
+  // Also sync to Supabase
+  if(supa){
+    appSocios.forEach(function(s){ dbSaveSocio(s); });
+  }
 }
 loadSocios();
 
@@ -4974,8 +5142,10 @@ function saveSocio(){
 
 function eliminarSocio(idx){
   if(!confirm('Eliminar socio "'+appSocios[idx].nombre+'"?')) return;
+  var sid=appSocios[idx].id;
   appSocios.splice(idx,1);
   saveSocios();
+  if(supa) dbDeleteSocio(sid);
   navigate('socios');
   toast('Socio eliminado');
 }
