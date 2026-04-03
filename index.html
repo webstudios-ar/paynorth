@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PAYNORTH — Panel de Administración</title>
+<title>PayNorth — Panel de Control</title>
+<meta name="description" content="PayNorth — Plataforma de administración de terminales de pago.">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" async onerror="window._supaFailed=true"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -495,6 +500,7 @@ function loadGrupos(){
 }
 function saveGrupos(){
   try{ localStorage.setItem('paynorth_grupos',JSON.stringify(grupos)); }catch(e){}
+  if(supa) grupos.forEach(function(g){ dbSaveGrupo(g); });
 }
 function getGrupoDeTerminal(terminal){
   return grupos.find(function(g){ return g.terminales&&g.terminales.indexOf(terminal)>=0; })||null;
