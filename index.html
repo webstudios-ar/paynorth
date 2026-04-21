@@ -3142,24 +3142,44 @@ function renderGuardar(){
 }
 
 function guardarSemanaAuto(){
-  // Detectar from/to automáticamente desde las transacciones
-  var txFrom=null, txTo=null;
+  if(!transactions.length){toast('No hay transacciones cargadas');return;}
+
+  function getMondayOf(d){var day=d.getDay()||7;var mon=new Date(d);mon.setDate(d.getDate()-day+1);mon.setHours(0,0,0,0);return mon;}
+  function getSundayOf(mon){var sun=new Date(mon);sun.setDate(mon.getDate()+6);return sun;}
+  function fmtDate(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+  function mondayKey(d){var m=getMondayOf(d);return m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-'+String(m.getDate()).padStart(2,'0');}
+
+  // Agrupar transacciones por semana (lunes a domingo)
+  var grupos={};
   transactions.forEach(function(t){
     if(!t.fecha) return;
     var parts=t.fecha.split('/');
     if(parts.length<3) return;
     var d=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
-    if(!txFrom||d<txFrom) txFrom=d;
-    if(!txTo||d>txTo) txTo=d;
+    var key=mondayKey(d);
+    if(!grupos[key]){
+      var mon=getMondayOf(d);
+      grupos[key]={from:fmtDate(mon),to:fmtDate(getSundayOf(mon)),txs:[]};
+    }
+    grupos[key].txs.push(t);
   });
-  if(!txFrom){toast('No se pudo detectar la fecha de las transacciones');return;}
-  function getMondayOf(d){var day=d.getDay()||7;var mon=new Date(d);mon.setDate(d.getDate()-day+1);return mon;}
-  function getSundayOf(mon){var sun=new Date(mon);sun.setDate(mon.getDate()+6);return sun;}
-  function fmtDate(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
-  var from=fmtDate(getMondayOf(txFrom));
-  var to=fmtDate(getSundayOf(getMondayOf(txFrom)));
-  guardarSemanaEnHistorial(from,to,transactions);
+
+  var keys=Object.keys(grupos).sort();
+  if(!keys.length){toast('No se pudieron detectar fechas');return;}
+
+  var resumen=[];
+  keys.forEach(function(k){
+    var g=grupos[k];
+    guardarSemanaEnHistorial(g.from, g.to, g.txs);
+    resumen.push(g.from+' — '+g.to+' ('+g.txs.length+' ops)');
+  });
   saveHistorial();
+
+  if(keys.length===1){
+    toast('✅ Semana guardada: '+resumen[0]);
+  } else {
+    toast('✅ '+keys.length+' semanas creadas automáticamente: '+resumen.join(' · '));
+  }
   navigate('guardar');
 }
 
