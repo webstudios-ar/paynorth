@@ -3149,10 +3149,11 @@ function renderGuardar(){
       html+='<td style="text-align:center"><strong>'+h.txCount+'</strong></td>';
       html+='<td>'+fmt(h.vol)+'</td>';
       html+='<td style="color:var(--gd);font-weight:500">'+fmt(h.com)+'</td>';
-      html+='<td onclick="event.stopPropagation()">';
+      html+='<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;align-items:center">';
       if(!esActiva) html+='<button class="bsm pdf" onclick="seleccionarSemanaActiva(\''+h.key+'\')">📌 Seleccionar</button>';
       else html+='<span style="font-size:11px;color:var(--amb);font-weight:600">✓ Seleccionada</span>';
-      html+='</td>';
+      html+='<button class="bsm" title="Cargar operaciones en memoria para agregar más" onclick="cargarSemanaEnMemoria(\''+h.key+'\')">+ Agregar más</button>';
+      html+='</div></td>';
       html+='</tr>';
     });
     html+='</tbody></table></div>';
