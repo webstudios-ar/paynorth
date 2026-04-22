@@ -956,6 +956,11 @@ function guardarSemanaEnHistorial(from, to, txs){
   var key=weekKey(from)||('manual-'+Date.now());
   var yaExiste=!!historial[key];
 
+  // PASO 0: Filtrar solo APROBADAS — las rechazadas/anuladas/pendientes no se liquidan
+  var totalRecibidas=txs.length;
+  txs=txs.filter(function(t){return t.estado==='aprobada';});
+  var descartadas=totalRecibidas-txs.length;
+
   // PASO 1: Filtrar duplicados contra TODO el historial global
   // Si ya existe esa semana, excluirla del filtro (porque queremos agregar operaciones nuevas a ella)
   var txsLimpias=filtrarNuevasContraHistorial(txs, yaExiste?key:null);
@@ -963,7 +968,10 @@ function guardarSemanaEnHistorial(from, to, txs){
 
   // PASO 2: Validación - si no hay nada nuevo, avisar y no guardar
   if(!txsLimpias.length){
-    toast('⚠️ Todas las operaciones ('+txs.length+') ya estaban en el historial — nada nuevo para guardar');
+    var msg='⚠️ Nada nuevo para guardar';
+    if(descartadas>0) msg+=' · '+descartadas+' no aprobadas descartadas';
+    if(dupGlobal>0) msg+=' · '+dupGlobal+' ya estaban en el historial';
+    toast(msg);
     return false;
   }
 
@@ -3272,11 +3280,17 @@ function sortTxsByFecha(txs){
 function acumularEnSemanaExistente(key){
   var h=historial[key];
   if(!h){toast('Semana no encontrada');return;}
+  // Filtrar solo APROBADAS — las rechazadas/anuladas/pendientes no se liquidan
+  var aprobadas=transactions.filter(function(t){return t.estado==='aprobada';});
+  var descartadas=transactions.length-aprobadas.length;
   // Dedup global contra TODO el historial (excluyendo esta semana que ya conoce sus propias txs)
-  var nuevas=filtrarNuevasContraHistorial(transactions, key);
-  var dupCount=transactions.length-nuevas.length;
+  var nuevas=filtrarNuevasContraHistorial(aprobadas, key);
+  var dupCount=aprobadas.length-nuevas.length;
   if(!nuevas.length){
-    toast('No hay operaciones nuevas — '+dupCount+' duplicadas eliminadas');
+    var msg='Nada nuevo para agregar';
+    if(descartadas>0) msg+=' · '+descartadas+' no aprobadas descartadas';
+    if(dupCount>0) msg+=' · '+dupCount+' duplicadas ignoradas';
+    toast(msg);
     return;
   }
   h.txs=sortTxsByFecha(h.txs.concat(nuevas));
@@ -3295,7 +3309,7 @@ function acumularEnSemanaExistente(key){
   h.savedAt=new Date().toISOString();
   saveHistorial();
   dbSaveHistorialWeek(h);
-  toast('✅ '+nuevas.length+' operaciones agregadas'+(dupCount>0?' · '+dupCount+' duplicadas ignoradas':'')+' — total: '+h.txCount);
+  toast('✅ '+nuevas.length+' aprobadas agregadas'+(descartadas>0?' · '+descartadas+' no aprobadas descartadas':'')+(dupCount>0?' · '+dupCount+' duplicadas ignoradas':'')+' — total: '+h.txCount);
   navigate('guardar');
 }
 
