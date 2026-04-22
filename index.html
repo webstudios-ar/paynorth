@@ -876,14 +876,22 @@ function normalizeFecha(raw){
 // Guardar semana actual en historial cuando se importa un CSV
 
 // ── HELPERS DE DEDUPLICACIÓN (deben estar antes de usarse) ────────────────────
-// Genera ID único para deduplicar — SOLO usa cupón o QR ID
+// Genera ID único para deduplicar
+// Prioridad: UUID (único global) > QR ID (para QR) > composite (terminal+cupon+fecha+monto)
+// El número de cupón SOLO es único dentro de una terminal — por eso no se usa solo
 function txUniqueIdEarly(t){
+  // UUID del CSV de Payway — único global, mejor opción
+  if(t.uuid&&String(t.uuid).trim()) return 'uuid:'+String(t.uuid).trim();
   if(t.esQRTransferencia){
+    // QR ID (guardado en nroAutorizacion) — único global
     if(t.nroAutorizacion&&String(t.nroAutorizacion).trim()) return 'qr:'+String(t.nroAutorizacion).trim();
     if(t.nroCupon&&String(t.nroCupon).trim()&&String(t.nroCupon).trim()!=='0') return 'qrcup:'+String(t.nroCupon).trim();
     return null;
   }
-  if(t.nroCupon&&String(t.nroCupon).trim()&&String(t.nroCupon).trim()!=='0') return 'cup:'+String(t.nroCupon).trim();
+  // Fallback para tarjetas sin UUID: composite key que sí es único por operación
+  if(t.nroCupon&&String(t.nroCupon).trim()&&String(t.nroCupon).trim()!=='0'){
+    return 'comp:'+(t.terminal||'')+'|'+String(t.nroCupon).trim()+'|'+(t.fecha||'')+'|'+(t.monto||0);
+  }
   return null;
 }
 
@@ -2157,6 +2165,7 @@ function processCSV(text){
   var iCup  = fi(['nro cupon','nrocupon','cupon']);
   var iAut  = fi(['nro autorizacion','autorizacion']);
   var iProp = fi(['propina']);
+  var iUUID = fi(['uuid']);
 
   // Diagnóstico en consola si falla
   if(iT<0||iM<0){
@@ -2233,18 +2242,25 @@ function processCSV(text){
       propina     : propina,
       nroCupon    : iCup>=0?(cols[iCup]||''):'',
       nroAutorizacion: iAut>=0?(cols[iAut]||''):'',
+      uuid        : iUUID>=0?(cols[iUUID]||'').trim():'',
     });
   }
 
   // Mantener las QR que ya estaban cargadas — no sobreescribir
   var qrExistentes=transactions.filter(function(t){return t.esQRTransferencia;});
-  // Dedup tarjetas por nroCupon
-  var existingCupones={};
+  // Dedup tarjetas por UUID (si hay) o por terminal+cupon+fecha+monto
+  function cardKey(t){
+    if(t.uuid&&String(t.uuid).trim()) return 'uuid:'+String(t.uuid).trim();
+    if(t.nroCupon) return 'comp:'+(t.terminal||'')+'|'+t.nroCupon+'|'+(t.fecha||'')+'|'+t.monto;
+    return null;
+  }
+  var existingKeys={};
   transactions.filter(function(t){return !t.esQRTransferencia;}).forEach(function(t){
-    if(t.nroCupon) existingCupones[t.nroCupon]=true;
+    var k=cardKey(t); if(k) existingKeys[k]=true;
   });
   var nuevasTarjetas=txs.filter(function(t){
-    return !t.nroCupon||!existingCupones[t.nroCupon];
+    var k=cardKey(t);
+    return !k||!existingKeys[k];
   });
   // Reconstruir: tarjetas nuevas + QR existentes
   transactions=nuevasTarjetas.concat(qrExistentes);
