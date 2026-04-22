@@ -2370,8 +2370,8 @@ function renderLiquidaciones(){
       html+='</div>';
       html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
       if(termsConOps.length>0){
-        html+='<button class="bsm pdf" onclick="generateGroupPDFs(\''+g.id+'\')" title="Un PDF individual por cada terminal del grupo">📄 PDFs individuales</button>';
-        html+='<button class="bsm" onclick="generateGroupSummary(\''+g.id+'\')" title="Un solo PDF con el resumen consolidado del grupo">📊 Resumen para '+g.nombre+'</button>';
+        html+='<button class="bsm pdf" onclick="generateGroupPDFs(\''+g.id+'\')" title="Un PDF individual por cada terminal del grupo" style="min-width:175px;justify-content:center">📄 PDFs individuales</button>';
+        html+='<button class="bsm" onclick="generateGroupSummary(\''+g.id+'\')" title="Un solo PDF con el resumen consolidado del grupo" style="min-width:215px;justify-content:center">📊 Resumen para '+g.nombre+'</button>';
       } else {
         html+='<span style="font-size:11px;color:var(--t3);padding:6px 10px">Sin operaciones en este período</span>';
       }
