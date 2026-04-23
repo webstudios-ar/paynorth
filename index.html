@@ -1432,7 +1432,7 @@ function navigate(page){
   if(page==='importar')initDrop();
 }
 
-function fmt(n){return'$'+Math.round(n).toLocaleString('es-AR');}
+function fmt(n){if(n===undefined||n===null||isNaN(n))return'$0,00';return'$'+(+n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function pct(n){return(n||0).toFixed(2)+'%';}
 function simVol(p){var v=p.volMensual||0;return{cred:v*.55,deb:v*.30,qr:v*.15};}
 function getActiveTxs(){
@@ -2746,7 +2746,7 @@ function generateGroupSummary(groupId){
   var now=new Date();
   function fd(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
   var emision=fd(now);
-  function fv(val){return(val&&val>0)?'$'+Math.round(val).toLocaleString('es-AR'):'$ -';}
+  function fv(val){return(val&&val>0)?'$'+val.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'$ -';}
 
   // Header (mismo estilo que buildPDF)
   doc.setFillColor(C.dark[0],C.dark[1],C.dark[2]);doc.rect(0,0,8,pH,'F');
@@ -2865,7 +2865,7 @@ function buildPDF(p,v,from,to,num,com){
   function fd(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
   var emision=fd(now);
   var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  function fv(val){return(val&&val>0)?'$'+Math.round(val).toLocaleString('es-AR'):'$ -';}
+  function fv(val){return(val&&val>0)?'$'+val.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'$ -';}
 
   // Header
   doc.setFillColor(C.dark[0],C.dark[1],C.dark[2]);doc.rect(0,0,8,pH,'F');
