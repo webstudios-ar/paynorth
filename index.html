@@ -895,6 +895,56 @@ function txUniqueIdEarly(t){
   return null;
 }
 
+// Cancela operaciones devueltas con su venta aprobada original.
+// Payway reporta una venta aprobada y su devolución como 2 operaciones
+// separadas (la devolución con monto negativo y estado "Devuelto").
+// Si dejamos solo la aprobada, el volumen queda inflado en el monto devuelto.
+// Esta función busca cada devuelta y elimina tanto ella como su venta original.
+// Match: mismo terminal, mismo tipo, |monto| igual, fecha ±1 día.
+// Devuelve: {txs: array limpio, canceladas: N pares, devueltasSinMatch: N huérfanas}
+function cancelarDevueltasConSuVenta(txs){
+  function fechaMs(f){
+    if(!f) return 0;
+    var p=f.split('/');
+    if(p.length!==3) return 0;
+    var dd=parseInt(p[0],10), mm=parseInt(p[1],10)-1, yy=parseInt(p[2],10);
+    return new Date(yy,mm,dd).getTime();
+  }
+  var DAY=86400000;
+  var idxBorrar={};
+  var canceladas=0, sinMatch=0;
+  for(var i=0;i<txs.length;i++){
+    if(txs[i].estado!=='devuelta') continue;
+    if(idxBorrar[i]) continue;
+    var t=txs[i];
+    var montoAbs=Math.abs(t.monto);
+    var tMs=fechaMs(t.fecha);
+    var matchIdx=-1;
+    for(var j=0;j<txs.length;j++){
+      if(j===i||idxBorrar[j]) continue;
+      var s=txs[j];
+      if(s.estado!=='aprobada') continue;
+      if(s.terminal!==t.terminal) continue;
+      if(s.tipo!==t.tipo) continue;
+      if(Math.abs(Math.abs(s.monto)-montoAbs)>0.01) continue;
+      var sMs=fechaMs(s.fecha);
+      if(Math.abs(sMs-tMs)>DAY) continue;
+      matchIdx=j; break;
+    }
+    if(matchIdx>=0){
+      idxBorrar[i]=1;
+      idxBorrar[matchIdx]=1;
+      canceladas++;
+    } else {
+      sinMatch++;
+    }
+  }
+  if(canceladas===0) return {txs:txs, canceladas:0, devueltasSinMatch:sinMatch};
+  var limpio=[];
+  for(var k=0;k<txs.length;k++){ if(!idxBorrar[k]) limpio.push(txs[k]); }
+  return {txs:limpio, canceladas:canceladas, devueltasSinMatch:sinMatch};
+}
+
 // Ordena transacciones por fecha ascendente
 function sortTxsByFechaEarly(txs){
   return txs.slice().sort(function(a,b){
@@ -956,7 +1006,13 @@ function guardarSemanaEnHistorial(from, to, txs){
   var key=weekKey(from)||('manual-'+Date.now());
   var yaExiste=!!historial[key];
 
-  // PASO 0: Filtrar solo APROBADAS — las rechazadas/anuladas/pendientes no se liquidan
+  // PASO 0a: Cancelar ventas que fueron devueltas en el mismo período
+  // (elimina el par venta+devolución para que no queden "ventas fantasma")
+  var cancelRes=cancelarDevueltasConSuVenta(txs);
+  txs=cancelRes.txs;
+  var paresCanceladas=cancelRes.canceladas;
+
+  // PASO 0b: Filtrar solo APROBADAS — las rechazadas/anuladas/pendientes no se liquidan
   var totalRecibidas=txs.length;
   txs=txs.filter(function(t){return t.estado==='aprobada';});
   var descartadas=totalRecibidas-txs.length;
@@ -1023,6 +1079,7 @@ function guardarSemanaEnHistorial(from, to, txs){
 
   var accion=yaExiste?'agregadas a':'guardadas en';
   var msg='✅ '+txsLimpias.length+' operaciones '+accion+' "'+historial[key].label+'"';
+  if(paresCanceladas>0) msg+=' · '+paresCanceladas+' venta'+(paresCanceladas>1?'s':'')+' cancelada'+(paresCanceladas>1?'s':'')+' con su devolución';
   if(dupGlobal>0) msg+=' · '+dupGlobal+' duplicadas descartadas';
   toast(msg);
 
@@ -2070,6 +2127,7 @@ function processCSVQR(text){
     var estRaw=norm(cols[iEst]||'');
     var estado=(estRaw.indexOf('apr')>=0||estRaw.indexOf('acep')>=0)?'aprobada':'rechazada';
     if(estRaw.indexOf('anul')>=0) estado='anulada';
+    if(estRaw.indexOf('devuelt')>=0) estado='devuelta';
     if(estRaw==='otro'||estRaw.indexOf('otro')>=0) estado='pendiente';
 
     // Convertir al mismo formato que tarjetas para que todo el sistema lo lea igual
@@ -2223,11 +2281,12 @@ function processCSV(text){
     // Si MARCA vacía, fallback a columna TIPO
     else if(!marcaRaw&&tipoColRaw.indexOf('deb')>=0) tipo='debito';
 
-    // ESTADO: Payway usa "Aprobado" (con O) / "Rechazado" / "Otro"
+    // ESTADO: Payway usa "Aprobado" (con O) / "Rechazado" / "Otro" / "Devuelto"
     var estRaw=norm(cols[iE]||'');
     var estado='rechazada'; // default
     if(estRaw.indexOf('apr')>=0||estRaw.indexOf('acep')>=0||estRaw==='ok'||estRaw==='1') estado='aprobada';
     else if(estRaw.indexOf('anul')>=0) estado='anulada';
+    else if(estRaw.indexOf('devuelt')>=0) estado='devuelta';
     else if(estRaw==='otro'||estRaw.indexOf('otro')>=0) estado='pendiente'; // Payway usa "Otro" — quedan como pendientes para revisar
 
     // Propina (si existe)
@@ -3540,9 +3599,13 @@ function sortTxsByFecha(txs){
 function acumularEnSemanaExistente(key){
   var h=historial[key];
   if(!h){toast('Semana no encontrada');return;}
+  // Cancelar ventas que fueron devueltas en el mismo batch
+  var cancelRes=cancelarDevueltasConSuVenta(transactions);
+  var txsLimpias=cancelRes.txs;
+  var paresCanceladas=cancelRes.canceladas;
   // Filtrar solo APROBADAS — las rechazadas/anuladas/pendientes no se liquidan
-  var aprobadas=transactions.filter(function(t){return t.estado==='aprobada';});
-  var descartadas=transactions.length-aprobadas.length;
+  var aprobadas=txsLimpias.filter(function(t){return t.estado==='aprobada';});
+  var descartadas=transactions.length-aprobadas.length-paresCanceladas*2;
   // Dedup global contra TODO el historial (excluyendo esta semana que ya conoce sus propias txs)
   var nuevas=filtrarNuevasContraHistorial(aprobadas, key);
   var dupCount=aprobadas.length-nuevas.length;
@@ -3569,7 +3632,7 @@ function acumularEnSemanaExistente(key){
   h.savedAt=new Date().toISOString();
   saveHistorial();
   dbSaveHistorialWeek(h);
-  toast('✅ '+nuevas.length+' aprobadas agregadas'+(descartadas>0?' · '+descartadas+' no aprobadas descartadas':'')+(dupCount>0?' · '+dupCount+' duplicadas ignoradas':'')+' — total: '+h.txCount);
+  toast('✅ '+nuevas.length+' aprobadas agregadas'+(paresCanceladas>0?' · '+paresCanceladas+' venta'+(paresCanceladas>1?'s':'')+' cancelada'+(paresCanceladas>1?'s':'')+' con su devolución':'')+(descartadas>0?' · '+descartadas+' no aprobadas descartadas':'')+(dupCount>0?' · '+dupCount+' duplicadas ignoradas':'')+' — total: '+h.txCount);
   navigate('guardar');
 }
 
