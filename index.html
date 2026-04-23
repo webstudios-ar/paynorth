@@ -6061,6 +6061,174 @@ function renderSocios(){
   return html;
 }
 
+
+
+// ═══════════ SISTEMA DE PREVIEW POR ROL ═══════════
+window._previewCtx = null; window._previewOriginal = null;
+window.ITEMS_POR_ROL = {admin:null, socio:["dashboard","puntos","liquidaciones","historial"], pdv:["dashboard","puntos","liquidaciones","historial"]};
+window.effectiveRole = function(){ return window._previewCtx ? window._previewCtx.tipo : role; };
+window.filtrarMenuPorRol = function(){
+  var items = window.ITEMS_POR_ROL[window.effectiveRole()];
+  document.querySelectorAll(".ni").forEach(function(el){
+    if(!items){ el.style.display=""; return; }
+    var oc = el.getAttribute("onclick")||""; var m = oc.match(/navigate\('([^']+)'\)/);
+    if(!m){ el.style.display=""; return; }
+    el.style.display = items.indexOf(m[1])>=0 ? "" : "none";
+  });
+};
+window.mostrarBannerPreview = function(){
+  var existing = document.getElementById("preview-banner"); if(existing) existing.remove();
+  var ctx = window._previewCtx; if(!ctx) return;
+  var b = document.createElement("div"); b.id = "preview-banner";
+  b.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#f59e0b,#ea580c);color:white;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-family:inherit;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.15)";
+  b.innerHTML = '<span>🔍 Modo preview — Viendo como <strong style="text-transform:uppercase">'+(ctx.tipo==="socio"?"socio":"pdv")+'</strong> · <span style="background:rgba(255,255,255,.25);padding:3px 10px;border-radius:12px;margin-left:6px">'+ctx.nombre+'</span></span><button onclick="exitPreview()" style="background:rgba(255,255,255,.25);color:white;border:1px solid rgba(255,255,255,.5);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600">← Volver a vista admin</button>';
+  document.body.insertBefore(b, document.body.firstChild);
+  document.body.style.paddingTop = "44px";
+};
+window.ocultarBannerPreview = function(){ var b=document.getElementById("preview-banner"); if(b) b.remove(); document.body.style.paddingTop=""; };
+window.aplicarRefinamientosPorRol = function(){
+  var er = window.effectiveRole(); if(er === "admin") return;
+  var ocultarColumna = function(labs){
+    document.querySelectorAll("table").forEach(function(table){
+      var firstRow = table.querySelector("thead tr") || table.querySelector("tr"); if(!firstRow) return;
+      for(var i=0;i<firstRow.children.length;i++){
+        var tC = firstRow.children[i].textContent.trim().toUpperCase().replace(/[^\w\s.ÁÉÍÓÚÑ/]/g,"").replace(/\s+/g," ").trim();
+        if(labs.some(function(l){return tC.indexOf(l)>=0;})){
+          var idx = i;
+          table.querySelectorAll("tr").forEach(function(tr){ if(tr.children[idx]) tr.children[idx].style.display="none"; });
+        }
+      }
+    });
+  };
+  var labSocio = ["COBRADO A CLIENTES","NETO PAYNORTH","TOTAL COMISIONES","COSTO PAYWAY","COMISIONES","NETO"];
+  var labPdv = ["COBRADO A CLIENTES","NETO PAYNORTH","COMISIONES","NETO"];
+  var lab = er==="socio" ? labSocio : labPdv;
+  document.querySelectorAll(".sc").forEach(function(c){
+    var t = c.textContent.toUpperCase();
+    lab.forEach(function(l){ if(t.indexOf(l)===0||new RegExp("^"+l+"\\b").test(t)) c.style.display="none"; });
+  });
+  if(er==="pdv"){
+    document.querySelectorAll(".sc").forEach(function(c){
+      if(c.textContent.toUpperCase().indexOf("PDV ACTIVOS")>=0) c.style.display="none";
+    });
+  }
+  document.querySelectorAll("input[placeholder*=\"Buscar\" i]").forEach(function(inp){
+    if(er==="pdv") inp.style.display="none";
+    else inp.placeholder = "Buscar por terminal...";
+  });
+  document.querySelectorAll("select").forEach(function(sel){
+    var hE = Array.from(sel.options).some(function(o){return /estado/i.test(o.text);});
+    var hG = Array.from(sel.options).some(function(o){return /grupo/i.test(o.text);});
+    if(hE||hG) sel.style.display="none";
+  });
+  document.querySelectorAll("button, div[onclick], [class*=tab]").forEach(function(el){
+    var t = el.textContent.trim();
+    if(el.id==="btn-abrir-preview"||(el.closest&&el.closest("#preview-banner"))) return;
+    if(t==="Por grupos"||/Por grupos$/.test(t)||/Gestionar grupos/.test(t)) el.style.display="none";
+  });
+  var colsOc = {socio:["DIRECCIÓN","GRUPO","ESTADO","ACCIONES","CRÉD","DÉB","QR","PROPINA","CBU","ALIAS"], pdv:["DIRECCIÓN","GRUPO","ESTADO","ACCIONES","CBU","ALIAS"]};
+  ocultarColumna(colsOc[er]||[]);
+  document.querySelectorAll("[style*=\"position: fixed\"], .fab").forEach(function(el){
+    if(el.id==="preview-banner"||el.id==="btn-abrir-preview") return;
+    var t = el.textContent.trim(); if(t==="+"||t.length<=2) el.style.display="none";
+  });
+  document.querySelectorAll(".ctitle, h2, h3, h4").forEach(function(h){
+    if(/Liquidar por grupo/i.test(h.textContent)){ var c = h.closest(".card"); if(c) c.style.display="none"; }
+  });
+  document.querySelectorAll("button").forEach(function(b){
+    if(/Generar todas/i.test(b.textContent)) b.style.display="none";
+  });
+  if(er==="socio"){
+    ocultarColumna(["A COBRAR","COM CRÉD","COM DÉB","COM QR","COM PROP"]);
+    document.querySelectorAll("div, span").forEach(function(el){
+      if(el.children.length>2) return;
+      var t = el.textContent.trim().toUpperCase();
+      if(/^A\s*COBRAR\b/i.test(t)&&/\$[\d.,\-]+/.test(t)&&t.length<60) el.style.display="none";
+    });
+  }
+  document.querySelectorAll("div, span, td, th").forEach(function(el){
+    if(el.children.length>2) return;
+    var t = el.textContent.trim().toUpperCase();
+    if(/^(COMISIÓN|COMISIONES|NETO|NETO TOTAL)\b/.test(t)&&/\$[\d.,\-]+/.test(t)&&t.length<60) el.style.display="none";
+  });
+};
+window.enterPreview = function(ctx){
+  window._previewOriginal = {pdvs:pdvs.slice(), historial:historial, transactions:transactions.slice()};
+  window._previewCtx = ctx;
+  var terms = [];
+  if(ctx.tipo==="socio"&&ctx.grupoIds){
+    ctx.grupoIds.forEach(function(gid){ var g=grupos.find(function(x){return x.id===gid;}); if(g) terms=terms.concat(g.terminales); });
+  } else if(ctx.tipo==="pdv"&&ctx.terminal){ terms = [ctx.terminal]; }
+  window.pdvs = window._previewOriginal.pdvs.filter(function(p){return terms.indexOf(p.terminal)>=0;});
+  window.transactions = window._previewOriginal.transactions.filter(function(t){return terms.indexOf(t.terminal)>=0;});
+  var nh={};
+  Object.keys(window._previewOriginal.historial).forEach(function(k){
+    var h=window._previewOriginal.historial[k]; var o={}; for(var kk in h){o[kk]=h[kk];}
+    o.txs = h.txs.filter(function(t){return terms.indexOf(t.terminal)>=0;});
+    o.vol = o.txs.reduce(function(s,t){return s+t.monto;},0);
+    o.txCount = o.txs.length; nh[k] = o;
+  });
+  window.historial = nh;
+  window.mostrarBannerPreview(); window.filtrarMenuPorRol();
+  navigate("dashboard");
+};
+window.exitPreview = function(){
+  if(!window._previewOriginal) return;
+  window.pdvs = window._previewOriginal.pdvs;
+  window.historial = window._previewOriginal.historial;
+  window.transactions = window._previewOriginal.transactions;
+  window._previewCtx = null; window._previewOriginal = null;
+  window.ocultarBannerPreview();
+  document.querySelectorAll(".ni").forEach(function(el){el.style.display="";});
+  navigate("usuarios");
+};
+(function(){
+  if(window._navHooked) return;
+  var _origNav = window.navigate;
+  window.navigate = function(v){
+    var r = _origNav.apply(this, arguments);
+    if(window._previewCtx){
+      setTimeout(function(){
+        window.mostrarBannerPreview(); window.filtrarMenuPorRol(); window.aplicarRefinamientosPorRol();
+      }, 80);
+    }
+    if(v==="usuarios" && !window._previewCtx){
+      setTimeout(function(){ window.inyectarBotonPreview && window.inyectarBotonPreview(); }, 100);
+    }
+    return r;
+  };
+  window._navHooked = true;
+})();
+window.inyectarBotonPreview = function(){
+  if(document.getElementById("btn-abrir-preview")) return;
+  var h = Array.from(document.querySelectorAll("h2,h1,.ctitle")).find(function(e){return e.textContent.trim()==="Usuarios";});
+  if(!h) return;
+  var btn = document.createElement("button"); btn.id = "btn-abrir-preview";
+  btn.textContent = "🔍 Probar preview (ver como...)";
+  btn.style.cssText = "position:fixed;top:16px;right:24px;z-index:9999;background:linear-gradient(90deg,#f59e0b,#ea580c);color:white;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;box-shadow:0 4px 12px rgba(245,158,11,.35)";
+  btn.onclick = function(){ window.abrirModalPreview(); };
+  document.body.appendChild(btn);
+};
+window.abrirModalPreview = function(){
+  var existing = document.getElementById("modal-preview"); if(existing) existing.remove();
+  var gruposOpts = grupos.map(function(g){ return '<option value="socio|'+g.id+'|'+g.nombre+'">SOCIO · '+g.nombre+' ('+g.terminales.length+' terminales)</option>'; }).join("");
+  var pdvAct = pdvs.filter(function(p){return p.estado==="activo";}).slice(0,50);
+  var pdvOpts = pdvAct.map(function(p){ return '<option value="pdv|'+p.terminal+'|'+(p.nombre||"(sin nombre)")+'">PDV · '+p.terminal+' – '+(p.nombre||"(sin nombre)")+'</option>'; }).join("");
+  var m = document.createElement("div"); m.id = "modal-preview";
+  m.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:inherit";
+  m.innerHTML = '<div style="background:white;border-radius:14px;padding:28px;width:520px;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.3)"><h3 style="margin:0 0 8px 0;font-size:18px;color:#111">🔍 Vista previa como usuario</h3><p style="margin:0 0 20px 0;color:#666;font-size:13px">Elegí un socio o punto de venta para ver cómo se vería la página para ese usuario. Los datos quedan filtrados y las cifras privadas se ocultan.</p><label style="display:block;font-size:12px;font-weight:600;color:#333;margin-bottom:6px;text-transform:uppercase">Ver como</label><select id="preview-selector" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:20px"><option value="">— Elegí un usuario —</option><optgroup label="Socios (ven todas las terminales del grupo)">'+gruposOpts+'</optgroup><optgroup label="PDVs (ven solo una terminal)">'+pdvOpts+'</optgroup></select><div style="display:flex;gap:10px;justify-content:flex-end"><button onclick="document.getElementById(\'modal-preview\').remove()" style="padding:10px 18px;border:1.5px solid #ddd;background:white;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">Cancelar</button><button onclick="window.confirmarPreview()" style="padding:10px 18px;border:none;background:#1a7a4a;color:white;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">Ver vista previa →</button></div></div>';
+  document.body.appendChild(m);
+};
+window.confirmarPreview = function(){
+  var sel = document.getElementById("preview-selector");
+  if(!sel || !sel.value){ alert("Elegí un usuario primero"); return; }
+  var parts = sel.value.split("|"); var tipo = parts[0], id = parts[1], nombre = parts[2];
+  var m = document.getElementById("modal-preview"); if(m) m.remove();
+  if(tipo==="socio") enterPreview({tipo:"socio", grupoIds:[id], nombre:nombre});
+  else enterPreview({tipo:"pdv", terminal:id, nombre:nombre});
+};
+setTimeout(function(){ if(typeof role!=="undefined" && role==="admin") window.inyectarBotonPreview && window.inyectarBotonPreview(); }, 1500);
+// ═══════════ FIN SISTEMA DE PREVIEW ═══════════
 </script>
 </body>
 </html>
